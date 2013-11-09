@@ -1,0 +1,109 @@
+name:          succinct
+category:      Data, Structures, Succinct
+version:       0.1
+license:       BSD3
+cabal-version: >= 1.10
+license-file:  LICENSE
+author:        Edward A. Kmett
+maintainer:    Edward A. Kmett <ekmett@gmail.com>
+stability:     experimental
+homepage:      http://github.com/ekmett/succinct
+bug-reports:   http://github.com/ekmett/succinct/issues
+copyright:     Copyright (C) 2013 Edward A. Kmett
+build-type:    Custom
+synopsis:      "Succinct" Data Structures
+
+extra-source-files:
+  .ghci
+  .travis.yml
+  .gitignore
+  .vim.custom
+  CHANGELOG.markdown
+  README.markdown
+
+description:
+  This package is a playground for working with succinct data structures
+
+source-repository head
+  type: git
+  location: git://github.com/ekmett/succinct.git
+
+-- You can disable the doctests test suite with -f-test-doctests
+flag test-doctests
+  default: True
+  manual: True
+
+-- You can disable the hlint test suite with -f-test-hlint
+flag test-hlint
+  default: True
+  manual: True
+
+library
+  build-depends:
+    base              >= 4     && < 5,
+    ghc-prim,
+    vector            >= 0.10  && < 0.11
+
+  default-language: Haskell2010
+
+  hs-source-dirs: src
+  c-sources: cbits/sse.c
+
+  ghc-options: -Wall -O2 -fllvm
+  cc-options: -msse4
+
+  if os(windows)
+    cpp-options: -DOS_WINDOWS=1
+
+  if os(darwin)
+    ghc-options: -optl -fexceptons
+    cpp-options: -DOS_X
+
+  exposed-modules:
+    Data.Dictionary.Class
+    Data.Dictionary.Broadword
+    Data.Dictionary.Rank9
+
+
+test-suite hlint
+  type: exitcode-stdio-1.0
+  main-is: hlint.hs
+  ghc-options: -w
+  hs-source-dirs: tests
+
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  ghc-options: -fllvm
+
+  if !flag(test-hlint)
+    buildable: False
+  else
+    build-depends:
+      base,
+      hlint >= 1.7
+
+-- Verify the results of the examples
+test-suite doctests
+  type:           exitcode-stdio-1.0
+  main-is:        doctests.hs
+  ghc-options:    -Wall
+  hs-source-dirs: tests
+
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  ghc-options: -fllvm
+
+  if !flag(test-doctests)
+    buildable: False
+  else
+    build-depends:
+      base,
+      bytestring,
+      containers,
+      directory      >= 1.0,
+      deepseq,
+      doctest        >= 0.9.1,
+      filepath,
+      semigroups     >= 0.9,
+      unordered-containers
+
+  if impl(ghc<7.6.1)
+    ghc-options: -Werror
