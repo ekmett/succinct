@@ -16,6 +16,7 @@ import Succinct.Dictionary.Rank9
 newtype Tree = Node [Tree]
   deriving (Eq,Show)
 
+-- | Convert a _finite_ Tree to Rank9
 fromTree :: Tree -> Rank9
 fromTree xs = fromList $ True: False: go 0 where
   go n = case level n xs [] of
