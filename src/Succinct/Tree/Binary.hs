@@ -1,6 +1,8 @@
 {-# LANGUAGE TypeFamilies #-}
 module Succinct.Tree.Binary
-  ( Tree(..)
+  (
+  -- * Succinct binary trees
+    Tree(..)
   , Binary(..)
   , fromTree
   , toTree
@@ -11,6 +13,7 @@ module Succinct.Tree.Binary
   , right
   , tip
   , bin
+  , tree
   ) where
 
 import Succinct.Dictionary.Class
@@ -29,15 +32,18 @@ fromTree xs = Binary $ Rank9.fromList $ go 0 where
     [] -> []
     ys -> ys ++ go (n+1)
 
+tree :: Binary -> Int -> Tree
+tree j i
+  | tip j i   = Tip
+  | otherwise = Bin (tree j l) (tree j (l + 1))
+  where l = left j i
+
 -- |
 -- @
--- toTree (fromTree t) root = t
+-- toTree (fromTree t) = t
 -- @
-toTree :: Binary -> Int -> Tree
-toTree j i
-  | tip j i = Tip
-  | otherwise = Bin (toTree j l) (toTree j (l + 1))
-  where l = left j i
+toTree :: Binary -> Tree
+toTree t = tree t root
 
 level :: Int -> Tree -> [Bool] -> [Bool]
 level 0 (Bin _ _) xs = True :xs
@@ -69,7 +75,7 @@ parent :: Binary -> Int -> Int
 parent (Binary m) i = select True m (div i 2)
 
 -- | @'left' t i@ returns the left child of a node @i@ given @'bin' t i@
-left   :: Binary -> Int -> Int
+left :: Binary -> Int -> Int
 left (Binary m) i = 2 * rank True m i
 
 -- | @right t i@ returns the right child of a node @i@ given @'bin' t i@
