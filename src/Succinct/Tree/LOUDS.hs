@@ -1,33 +1,23 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE BangPatterns #-}
-module Succinct.Tree.LOUDS
-  ( LOUDS(..)
-  , Tree(..)
-  , fromTree
-  ) where
-
-import Succinct.Dictionary.Class
-import Succinct.Dictionary.Rank9
-
-newtype Tree = Node [Tree]
-  deriving (Eq,Show)
 
 -- | Jacobson's 1-based LOUDS
 --
 -- Visit every node in level order. Represent each node with @n@ children by @(1^n)0@.
 --
 -- We add an extra @10@ \"superroot\" to the top of the tree to avoid corner cases.
-newtype LOUDS = LOUDS Rank9 deriving Show
+module Succinct.Tree.LOUDS
+  ( fromTree
+  , Tree(..)
+  ) where
 
-instance Dictionary LOUDS where
-  type Elem LOUDS = Bool
-  size (LOUDS t) = size t
-  rank a (LOUDS t) i = rank a t i
-  (!) (LOUDS t) i = t ! i
-  select a (LOUDS t) i = select a t i
+import Succinct.Dictionary.Rank9
 
-fromTree :: Tree -> LOUDS
-fromTree xs = LOUDS $ fromList $ True: False: go 0 where
+newtype Tree = Node [Tree]
+  deriving (Eq,Show)
+
+fromTree :: Tree -> Rank9
+fromTree xs = fromList $ True: False: go 0 where
   go n = case level n xs [] of
     [] -> []
     ys -> ys ++ go (n+1)
