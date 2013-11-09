@@ -128,6 +128,12 @@ instance Select1 Word64 where
 
 -- | a classic bit-vector-based succinct indexed dictionary
 --
+-- For @1 <= i <= size t@:
+--
+-- @
+-- 'rank0' t i + 'rank1' t i = i
+-- @
+--
 -- Given @i = 'select1' t j@
 --
 -- @
@@ -141,6 +147,7 @@ instance Select1 Word64 where
 -- 'rank0' t i = j
 -- 'rank1' t i = i - j
 -- @
+--
 class (Select0 t, Select1 t, Dictionary Bool t) => Ranked t where
   -- |
   -- @
