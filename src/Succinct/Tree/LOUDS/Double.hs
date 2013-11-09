@@ -29,7 +29,7 @@ import Succinct.Tree.LOUDS
 --
 -- All combinators in this module preserve these invariants.
 data Pos t = Pos {-# UNPACK #-} !Int {-# UNPACK #-} !Int t
-  deriving Show
+  deriving (Eq,Show)
 
 instance Dictionary t => Dictionary (Pos t) where
   type Elem (Pos t) = Elem t
