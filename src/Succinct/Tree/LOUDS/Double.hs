@@ -5,7 +5,8 @@
 module Succinct.Tree.LOUDS.Double
   (
   -- * Delpratt, Rahman and Raman's double numbering
-    root
+    Pos(..)
+  , root
   , parent
   , children
   , next
@@ -22,6 +23,8 @@ import Succinct.Tree.LOUDS
 -- |
 -- @Pos i j@ stores @i@ in @1..2n@, the position of a 1 in the LOUDS structure along with
 -- @j = rank0 t i@.
+--
+-- All combinators in this module preserve these invariants.
 data Pos = Pos {-# UNPACK #-} !Int {-# UNPACK #-} !Int
   deriving Show
 
