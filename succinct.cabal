@@ -20,6 +20,7 @@ extra-source-files:
   .vim.custom
   CHANGELOG.markdown
   README.markdown
+  HLint.hs
 
 description:
   This package is a playground for working with succinct data structures
