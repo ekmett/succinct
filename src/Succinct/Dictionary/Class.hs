@@ -103,15 +103,19 @@ instance Dictionary Bool Word64 where
 -- limited notion of 'select'.
 class Select0 t where
   select0 :: t -> Int -> Int
+#ifndef HLINT
   default select0 :: Dictionary Bool t => t -> Int -> Int
   select0 = select False
+#endif
 
 -- | Many structures that do not support arbitrary 'rank' can support a
 -- limited notion of 'select'.
 class Select1 t where
   select1 :: t -> Int -> Int
+#ifndef HLINT
   default select1 :: Dictionary Bool t => t -> Int -> Int
   select1 = select True
+#endif
 
 instance a ~ Bool => Select0 [a]
 instance a ~ Bool => Select1 [a]
