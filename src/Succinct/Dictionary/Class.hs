@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE BangPatterns #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE DefaultSignatures #-}
@@ -32,8 +33,10 @@ class Dictionary t where
   rank   :: Elem t -> t -> Int -> Int
 
   (!) :: t -> Int -> Elem t
+#ifndef HLINT
   default (!) :: (Elem t ~ Bool) => t -> Int -> Elem t
   (!) t i = rank True t i - rank True t (i - 1) == 1
+#endif
 
   -- |
   -- @'select' a t i@ returns the position of the @i@th appearance of @a@ in @t@.
