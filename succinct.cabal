@@ -64,6 +64,9 @@ library
     Succinct.Dictionary.Class
     Succinct.Dictionary.Rank9
     Succinct.Tree.Binary
+    Succinct.Tree.LOUDS
+    Succinct.Tree.LOUDS.Single
+    Succinct.Tree.LOUDS.Double
 
   other-modules:
     Succinct.Dictionary.Broadword

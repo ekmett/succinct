@@ -6,9 +6,6 @@
 module Succinct.Dictionary.Rank9
   ( Rank9(..)
   , fromList
-  , rank1
-  , rank_
-  , select1
   ) where
 
 import Control.Applicative
@@ -20,14 +17,14 @@ import Data.Vector.Internal.Check as Ck
 import qualified Data.Vector.Generic as G
 import qualified Data.Vector.Generic.Mutable as GM
 import Data.Word
-import Succinct.Dictionary.Class
+import qualified Succinct.Dictionary.Class as Succinct
 
 #define BOUNDS_CHECK(f) (Ck.f __FILE__ __LINE__ Ck.Bounds)
 
 data Rank9 = Rank9 {-# UNPACK #-} !Int !(U.Vector Word64) !(U.Vector Int)
   deriving (Eq,Ord,Show)
 
-instance Dictionary Rank9 where
+instance Succinct.Dictionary Rank9 where
   type Elem Rank9 = Bool
   size (Rank9 n _ _) = n
   {-# INLINE size #-}
@@ -40,20 +37,6 @@ rank1 (Rank9 n ws ps) i
   = BOUNDS_CHECK(checkIndex) "rank" i (n+1)
   $ (ps U.! w) + popCount ((ws U.! w) .&. (bit (bt i) - 1))
   where w = wd i
-
-select1 :: Rank9 -> Int -> Int
-select1 = select True
-
--- | @rank_ t i@ return the number of bits to the left of position @i@
---
--- For @i > 1@:
---
--- @
--- rank_ t i = rank t (i - 1)
--- @
-rank_ :: Rank9 -> Int -> Int
-rank_ _ 1 = 0
-rank_ t i = rank1 t (i - 1)
 
 wds :: Int -> Int
 wds x = unsafeShiftR (x + 63) 6

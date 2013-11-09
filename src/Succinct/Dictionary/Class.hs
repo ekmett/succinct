@@ -4,6 +4,8 @@
 {-# LANGUAGE DefaultSignatures #-}
 module Succinct.Dictionary.Class
   ( Dictionary(..)
+  , rank0, rank1, rank_
+  , select0, select1
   ) where
 
 import Data.Bits
@@ -44,6 +46,53 @@ class Dictionary t where
   default (!) :: (Elem t ~ Bool) => t -> Int -> Elem t
   (!) t i = rank True t i - rank True t (i - 1) == 1
 #endif
+
+-- |
+-- @
+-- 'rank0' t i = i - 'rank1' t i
+-- @
+rank0 :: (Dictionary t, Elem t ~ Bool) => t -> Int -> Int
+rank0 = rank False
+
+-- |
+-- @
+-- 'rank1' t i = i - 'rank0' t i
+-- @
+rank1 :: (Dictionary t, Elem t ~ Bool) => t -> Int -> Int
+rank1 = rank True
+
+-- |
+-- When @i = 'select0' t j@
+--
+-- @
+-- 'rank0' t i = j
+-- 'rank1' t i = i - j
+-- @
+select0 :: (Dictionary t, Elem t ~ Bool) => t -> Int -> Int
+select0 = select False
+
+-- |
+-- Given @i = 'select1' t j@
+--
+-- @
+-- 'rank0' t i = i - j
+-- 'rank1' t i = j
+-- @
+select1 :: (Dictionary t, Elem t ~ Bool) => t -> Int -> Int
+select1 = select True
+
+-- | @rank_ t i@ return the number of bits to the left of position @i@
+--
+-- When @i > 1@:
+--
+-- @
+-- rank_ t i = rank t (i - 1)
+-- @
+--
+-- The result is 0 otherwise.
+rank_ :: (Dictionary t, Elem t ~ Bool) => t -> Int -> Int
+rank_ _ 1 = 0
+rank_ t i = rank1 t (i - 1)
 
 -- | Offset binary search
 --
