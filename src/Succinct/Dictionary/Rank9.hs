@@ -22,7 +22,6 @@ import qualified Data.Vector.Generic.Mutable as GM
 import Data.Word
 import Succinct.Dictionary.Class
 
-
 #define BOUNDS_CHECK(f) (Ck.f __FILE__ __LINE__ Ck.Bounds)
 
 data Rank9 = Rank9 {-# UNPACK #-} !Int !(U.Vector Word64) !(U.Vector Int)
@@ -131,6 +130,3 @@ instance G.Vector U.Vector Bit where
     return $ Bit $ testBit w (bt i)
   basicUnsafeCopy (MV_Bit _ mu) (V_Bit _ u) = G.basicUnsafeCopy mu u
   elemseq _ b z = b `seq` z
-
-
-
