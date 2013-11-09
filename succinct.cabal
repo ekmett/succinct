@@ -62,9 +62,11 @@ library
 
   exposed-modules:
     Succinct.Dictionary.Class
-    Succinct.Dictionary.Broadword
     Succinct.Dictionary.Rank9
     Succinct.Tree.Binary
+
+  other-modules:
+    Succinct.Dictionary.Broadword
 
 
 test-suite hlint
