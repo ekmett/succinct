@@ -63,6 +63,7 @@ library
 
   exposed-modules:
     Succinct.Dictionary.Class
+    Succinct.Dictionary.Partitioned
     Succinct.Dictionary.Rank9
     Succinct.Tree.Binary
     Succinct.Tree.LOUDS
