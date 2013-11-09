@@ -63,7 +63,7 @@ library
     Succinct.Dictionary.Class
     Succinct.Dictionary.Broadword
     Succinct.Dictionary.Rank9
-    Succinct.Tree.Jacobson
+    Succinct.Tree.Binary
 
 
 test-suite hlint
