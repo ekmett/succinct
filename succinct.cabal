@@ -49,7 +49,7 @@ library
   hs-source-dirs: src
   c-sources: cbits/sse.c
 
-  ghc-options: -Wall -O2 -fllvm
+  ghc-options: -Wall -O2
   cc-options: -msse4
 
   if os(windows)
@@ -73,7 +73,6 @@ test-suite hlint
   hs-source-dirs: tests
 
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
-  ghc-options: -fllvm
 
   if !flag(test-hlint)
     buildable: False
@@ -86,11 +85,8 @@ test-suite hlint
 test-suite doctests
   type:           exitcode-stdio-1.0
   main-is:        doctests.hs
-  ghc-options:    -Wall
   hs-source-dirs: tests
-
-  ghc-options: -threaded -rtsopts -with-rtsopts=-N
-  ghc-options: -fllvm
+  ghc-options: -Wall -threaded -rtsopts -with-rtsopts=-N
 
   if !flag(test-doctests)
     buildable: False
