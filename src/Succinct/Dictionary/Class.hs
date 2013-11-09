@@ -42,6 +42,7 @@ class Dictionary t where
   select a t i = search (\j -> rank a t j >= i) i (size t)
   {-# INLINE select #-}
 
+
 -- | Offset binary search
 --
 -- Assuming @l <= h@. Returns @h@ if the predicate is never @True@ over @[l..h)@

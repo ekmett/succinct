@@ -6,6 +6,9 @@
 module Succinct.Dictionary.Rank9
   ( Rank9(..)
   , fromList
+  , rank1
+  , rank_
+  , select1
   ) where
 
 import Control.Applicative
@@ -38,6 +41,20 @@ rank1 (Rank9 n ws ps) i
   = BOUNDS_CHECK(checkIndex) "rank" i (n+1)
   $ (ps U.! w) + popCount ((ws U.! w) .&. (bit (bt i) - 1))
   where w = wd i
+
+select1 :: Rank9 -> Int -> Int
+select1 = select True
+
+-- | @rank_ t i@ return the number of bits to the left of position @i@
+--
+-- For @i > 1@:
+--
+-- @
+-- rank_ t i = rank t (i - 1)
+-- @
+rank_ :: Rank9 -> Int -> Int
+rank_ _ 1 = 0
+rank_ t i = rank1 t (i - 1)
 
 wds :: Int -> Int
 wds x = unsafeShiftR (x + 63) 6
