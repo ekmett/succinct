@@ -24,13 +24,16 @@ import qualified Succinct.Dictionary.Class as Succinct
 data Rank9 = Rank9 {-# UNPACK #-} !Int !(U.Vector Word64) !(U.Vector Int)
   deriving (Eq,Ord,Show)
 
-instance Succinct.Dictionary Rank9 where
-  type Elem Rank9 = Bool
+instance Succinct.Access Bool Rank9 where
   size (Rank9 n _ _) = n
   {-# INLINE size #-}
+instance Succinct.Dictionary Bool Rank9 where
   rank True xs n = rank1 xs n
   rank False xs n = n - rank1 xs n
   {-# INLINE rank #-}
+
+instance Succinct.Select0 Rank9
+instance Succinct.Select1 Rank9
 
 rank1 :: Rank9 -> Int -> Int
 rank1 (Rank9 n ws ps) i

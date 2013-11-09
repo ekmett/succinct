@@ -1,9 +1,11 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE BangPatterns #-}
+{-# LANGUAGE FlexibleContexts #-}
 module Succinct.Tree.LOUDS.Single
   (
   -- * Single indexing
-    toTree
+    Zipper(..)
+  , toTree
   , root
   , parent
   , children
@@ -13,37 +15,55 @@ module Succinct.Tree.LOUDS.Single
   ) where
 
 import Control.Applicative
+import Control.Comonad
+import Data.Foldable
+import Data.Traversable
 import Succinct.Dictionary.Class
 import Succinct.Tree.LOUDS
 
--- | single indexing a la Jacobson
+-- | single indexed LOUDS tree-zipper a la Jacobson
+data Zipper t = Zipper {-# UNPACK #-} !Int t
+  deriving (Eq,Show)
+
+instance Functor Zipper where
+  fmap f (Zipper i t) = Zipper i (f t)
+
+instance Comonad Zipper where
+  extract (Zipper _ t) = t
+  duplicate w@(Zipper i _) = Zipper i w
+
+instance Foldable Zipper where
+  foldMap f (Zipper _ t) = f t
+
+instance Traversable Zipper where
+  traverse f (Zipper i t) = Zipper i <$> f t
 
 -- | The 'root' of our succinct tree.
-root :: Int
-root = 1
+root :: t -> Zipper t
+root = Zipper 1
 
 -- | Extract a given sub-'Tree'
-tree :: (Dictionary t, Elem t ~ Bool) => t -> Int -> Tree
-tree t i = Node (tree t <$> children t i)
+tree :: Ranked t => Zipper t -> Tree
+tree z = Node (tree <$> children z)
 
 -- |
 -- @
 -- toTree . fromTree = id
 -- @
-toTree :: (Dictionary t, Elem t ~ Bool) => t -> Tree
-toTree t = tree t root
+toTree :: Ranked t => t -> Tree
+toTree = tree . root
 
 -- | The parent of any node @i /= root@, obtained by a legal sequence of operations.
-parent :: (Dictionary t, Elem t ~ Bool) => t -> Int -> Int
-parent t i = select1 t (rank0 t i)
+parent :: Ranked t => Zipper t -> Zipper t
+parent (Zipper i t) = Zipper (select1 t (rank0 t i)) t
 
 -- | indices of all of the children of a node
-children :: (Dictionary t, Elem t ~ Bool) => t -> Int -> [Int]
-children t i = [select0 t r + 1..select0 t (r + 1) - 1]
-  where r = rank1 t i
+children :: Ranked t => Zipper t -> [Zipper t]
+children (Zipper i t) = [ Zipper i' t | i' <- [select0 t j + 1..select0 t (j + 1) - 1] ]
+  where j = rank1 t i
 
 -- | Next sibling, if any
-next :: (Dictionary t, Elem t ~ Bool) => t -> Int -> Maybe Int
-next t i
-  | t ! (i + 1) = Just (i + 1)
+next :: Access Bool t => Zipper t -> Maybe (Zipper t)
+next (Zipper i t)
+  | t ! (i + 1) = Just $ Zipper (i + 1) t
   | otherwise = Nothing
