@@ -7,6 +7,7 @@ module Succinct.Tree.LOUDS.Single
     Zipper(..)
   , toTree
   , root
+  , top
   , parent
   , children
   , next
@@ -41,6 +42,10 @@ instance Traversable Zipper where
 -- | The 'root' of our succinct tree.
 root :: t -> Zipper t
 root = Zipper 1
+
+-- | Is this node the 'root'?
+top :: Zipper t -> Bool
+top (Zipper i _) = i == 1
 
 -- | Extract a given sub-'Tree'
 tree :: Ranked t => Zipper t -> Tree

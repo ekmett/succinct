@@ -11,6 +11,7 @@ module Succinct.Tree.LOUDS.Double
   -- * Delpratt, Rahman and Raman's double numbering
     Zipper(..)
   , root
+  , top
   , parent
   , children
   , next
@@ -65,6 +66,10 @@ instance Comonad Zipper where
 -- | The 'root' of our succinct tree.
 root :: t -> Zipper t
 root = Zipper 1 0
+
+-- | Is this node the 'root'?
+top :: Zipper t -> Bool
+top (Zipper i _ _) = i == 1
 
 -- | The parent of any node @i /= root@, obtained by a legal sequence of operations.
 parent :: Select1 t => Zipper t -> Zipper t

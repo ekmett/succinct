@@ -7,7 +7,8 @@ module Succinct.Tree.Binary
     Tree(..)
   , fromTree
   , toTree
-  -- * Positions
+  -- * Succinct binary tree zippers
+  , Zipper(..)
   , root
   , top, parent
   , children
@@ -78,14 +79,6 @@ root = Zipper 1
 top :: Zipper t -> Bool
 top (Zipper i _) = i == 1
 
--- | Is this node a 'Tip'?
-tip :: Access Bool t => Zipper t -> Bool
-tip (Zipper i t) = not (t ! i)
-
--- | Is this node a 'Bin'?
-bin :: Access Bool t => Zipper t -> Bool
-bin (Zipper i t) = t ! i
-
 children :: Ranked t => Zipper t -> Maybe (Zipper t, Zipper t)
 children (Zipper i t)
   | t ! i, j <- 2 * rank1 t i = Just (Zipper j t, Zipper (j + 1) t)
@@ -111,3 +104,12 @@ left (Zipper i t) = Zipper (2 * rank1 t i) t
 -- This is relatively unsafe. 'children' providers a safer access pattern
 right :: Ranked t => Zipper t -> Zipper t
 right (Zipper i t) = Zipper (2 * rank1 t i + 1) t
+
+-- | Is this node a 'Tip'?
+tip :: Access Bool t => Zipper t -> Bool
+tip (Zipper i t) = not (t ! i)
+
+-- | Is this node a 'Bin'?
+bin :: Access Bool t => Zipper t -> Bool
+bin (Zipper i t) = t ! i
+
