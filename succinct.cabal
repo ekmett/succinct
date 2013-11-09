@@ -60,9 +60,10 @@ library
     cpp-options: -DOS_X
 
   exposed-modules:
-    Data.Dictionary.Class
-    Data.Dictionary.Broadword
-    Data.Dictionary.Rank9
+    Succinct.Dictionary.Class
+    Succinct.Dictionary.Broadword
+    Succinct.Dictionary.Rank9
+    Succinct.Tree.Jacobson
 
 
 test-suite hlint
