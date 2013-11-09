@@ -62,7 +62,7 @@ rank1 :: (Dictionary t, Elem t ~ Bool) => t -> Int -> Int
 rank1 = rank True
 
 -- |
--- When @i = 'select0' t j@
+-- Given @i = 'select0' t j@
 --
 -- @
 -- 'rank0' t i = j
