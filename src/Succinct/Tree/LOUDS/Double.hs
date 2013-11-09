@@ -11,6 +11,7 @@ module Succinct.Tree.LOUDS.Double
   -- * Delpratt, Rahman and Raman's double numbering
     Zipper(..)
   , root
+  , index
   , top
   , parent
   , children
@@ -67,6 +68,10 @@ instance Comonad Zipper where
 root :: t -> Zipper t
 root = Zipper 1 0
 
+-- | The index of this node in level order, starting at 1 for the root.
+index :: Zipper t -> Int
+index (Zipper i j _) = i - j
+
 -- | Is this node the 'root'?
 top :: Zipper t -> Bool
 top (Zipper i _ _) = i == 1
@@ -77,9 +82,9 @@ parent (Zipper _ j t) = Zipper i' (i' - j) t
   where i' = select1 t j
 
 -- | positions of all of the children of a node
-children :: Ranked t => Zipper t -> [Zipper t]
-children (Zipper i _ t) = [ Zipper i' j' t | i' <- [select0 t j' + 1..select0 t (j' + 1) - 1] ]
-  where j' = rank1 t i
+children :: Select0 t => Zipper t -> [Zipper t]
+children (Zipper i j t) = [ Zipper i' j' t | i' <- [select0 t j' + 1..select0 t (j' + 1) - 1] ]
+  where j' = i - j
 
 -- | next sibling, if any
 next :: Access Bool t => Zipper t -> Maybe (Zipper t)
@@ -88,7 +93,7 @@ next (Zipper i j t)
   | otherwise           = Nothing
 
 -- | Extract a given sub-'Tree'
-tree :: Ranked t => Zipper t -> Tree
+tree :: Select0 t => Zipper t -> Tree
 tree i = Node (tree <$> children i)
 
 -- |
