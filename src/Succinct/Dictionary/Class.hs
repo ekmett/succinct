@@ -51,8 +51,8 @@ instance Access Bool Word64 where
 -- There is a Galois connection between @'rank' a t@ and @'select' a t'@.
 --
 -- @
--- select a t (rank a t i) <= i
--- rank a t (select a t i)  = i
+-- 'select' a t ('rank' a t i) <= i
+-- 'rank' a t ('select' a t i)  = i
 -- @
 class Access a t => Dictionary a t | t -> a where
   -- |
@@ -87,7 +87,6 @@ instance Eq a => Dictionary a [a] where
 
 -- | /O(1)/ 'rank' and 'select'
 instance Dictionary Bool Word64 where
-
   rank True xs i
     | i >= 64   = popCount xs
     | otherwise = popCount $ xs .&. (bit i - 1)
@@ -103,13 +102,6 @@ instance Dictionary Bool Word64 where
 -- | Many structures that do not support arbitrary 'rank' can support a
 -- limited notion of 'select'.
 class Select0 t where
-  -- |
-  -- Given @i = 'select0' t j@
-  --
-  -- @
-  -- 'rank0' t i = j
-  -- 'rank1' t i = i - j
-  -- @
   select0 :: t -> Int -> Int
   default select0 :: Dictionary Bool t => t -> Int -> Int
   select0 = select False
@@ -117,13 +109,6 @@ class Select0 t where
 -- | Many structures that do not support arbitrary 'rank' can support a
 -- limited notion of 'select'.
 class Select1 t where
-  -- |
-  -- Given @i = 'select1' t j@
-  --
-  -- @
-  -- 'rank0' t i = i - j
-  -- 'rank1' t i = j
-  -- @
   select1 :: t -> Int -> Int
   default select1 :: Dictionary Bool t => t -> Int -> Int
   select1 = select True
@@ -142,10 +127,25 @@ instance Select1 Word64 where
 -- These are supplied as methods to avoid surprise regarding scoping on imports
 
 -- | a classic bit-vector-based succinct indexed dictionary
+--
+-- Given @i = 'select1' t j@
+--
+-- @
+-- 'rank0' t i = i - j
+-- 'rank1' t i = j
+-- @
+--
+-- Given @i = 'select0' t j@
+--
+-- @
+-- 'rank0' t i = j
+-- 'rank1' t i = i - j
+-- @
 class (Select0 t, Select1 t, Dictionary Bool t) => Ranked t where
   -- |
   -- @
   -- 'rank0' t i = i - 'rank1' t i
+  -- 'rank0' = 'rank' 'False'
   -- @
   rank0 :: Ranked t => t -> Int -> Int
   rank0 = rank False
@@ -153,19 +153,20 @@ class (Select0 t, Select1 t, Dictionary Bool t) => Ranked t where
   -- |
   -- @
   -- 'rank1' t i = i - 'rank0' t i
+  -- 'rank1' = 'rank' 'True'
   -- @
   rank1 :: Ranked t => t -> Int -> Int
   rank1 = rank True
 
-  -- | @rank_ t i@ return the number of bits to the left of position @i@
+  -- | @'rank_' t i@ return the number of bits to the left of position @i@
   --
   -- When @i > 1@:
   --
   -- @
-  -- rank_ t i = rank1 t (i - 1)
+  -- 'rank_' t i = 'rank1' t (i - 1)
   -- @
   --
-  -- The result is 0 otherwise.
+  -- The result is @0@ otherwise.
   rank_ :: Ranked t => t -> Int -> Int
   rank_ _ 1 = 0
   rank_ t i = rank1 t (i - 1)
