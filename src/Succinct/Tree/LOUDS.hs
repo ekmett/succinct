@@ -8,6 +8,7 @@
 -- We add an extra @10@ \"superroot\" to the top of the tree to avoid corner cases.
 module Succinct.Tree.LOUDS
   ( fromTree
+  , louds
   , Tree(..)
   ) where
 
@@ -17,11 +18,14 @@ newtype Tree = Node [Tree]
   deriving (Eq,Show)
 
 -- | Convert a _finite_ Tree to Rank9
-fromTree :: Tree -> Rank9
-fromTree xs = fromList $ True: False: go 0 where
+louds :: Tree -> [Bool]
+louds xs = True: False: go 0 where
   go n = case level n xs [] of
     [] -> []
     ys -> ys ++ go (n+1)
+
+fromTree :: Tree -> Rank9
+fromTree = fromList . louds
 
 level :: Int -> Tree -> [Bool] -> [Bool]
 level 0 (Node cs) xs = replicate (length cs) True ++ (False:xs)
