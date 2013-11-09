@@ -27,7 +27,7 @@ instance Dictionary LOUDS where
   select a (LOUDS t) i = select a t i
 
 fromTree :: Tree -> LOUDS
-fromTree xs = LOUDS $ fromList $ True: False : go 0 where
+fromTree xs = LOUDS $ fromList $ True: False: go 0 where
   go n = case level n xs [] of
     [] -> []
     ys -> ys ++ go (n+1)
