@@ -32,12 +32,6 @@ class Dictionary t where
   -- for @0 < i <= 'size' t@
   rank   :: Elem t -> t -> Int -> Int
 
-  (!) :: t -> Int -> Elem t
-#ifndef HLINT
-  default (!) :: (Elem t ~ Bool) => t -> Int -> Elem t
-  (!) t i = rank True t i - rank True t (i - 1) == 1
-#endif
-
   -- |
   -- @'select' a t i@ returns the position of the @i@th appearance of @a@ in @t@.
   -- as long as @0 < i <= 'rank' a t ('size' t)@
@@ -45,6 +39,11 @@ class Dictionary t where
   select a t i = search (\j -> rank a t j >= i) i (size t)
   {-# INLINE select #-}
 
+  (!) :: t -> Int -> Elem t
+#ifndef HLINT
+  default (!) :: (Elem t ~ Bool) => t -> Int -> Elem t
+  (!) t i = rank True t i - rank True t (i - 1) == 1
+#endif
 
 -- | Offset binary search
 --
