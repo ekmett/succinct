@@ -17,7 +17,7 @@ module Succinct.Dictionary.Class
 
 import Data.Bits
 import Data.Word
-import Succinct.Dictionary.Util.Broadword
+import Succinct.Dictionary.Internal.Broadword
 
 class Access a t | t -> a where
   -- |

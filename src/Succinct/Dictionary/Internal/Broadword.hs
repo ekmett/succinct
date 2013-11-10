@@ -1,4 +1,4 @@
-module Succinct.Dictionary.Util.Broadword
+module Succinct.Dictionary.Internal.Broadword
   ( reverseBits
   , reverseBytes
   , byteSum

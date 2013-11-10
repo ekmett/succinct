@@ -65,13 +65,13 @@ library
     Succinct.Dictionary.Class
     Succinct.Dictionary.Partitioned
     Succinct.Dictionary.Rank9
+    Succinct.Dictionary.Internal.Broadword
+    Succinct.Dictionary.Internal.Binomial
     Succinct.Tree.Types
     Succinct.Tree.Binary
     Succinct.Tree.LOUDS
 
   other-modules:
-    Succinct.Dictionary.Util.Broadword
-    Succinct.Dictionary.Util.Binomial
 
 test-suite hlint
   type: exitcode-stdio-1.0
