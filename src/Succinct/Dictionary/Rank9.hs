@@ -27,6 +27,7 @@ data Rank9 = Rank9 {-# UNPACK #-} !Int !(U.Vector Word64) !(U.Vector Int)
 instance Succinct.Access Bool Rank9 where
   size (Rank9 n _ _) = n
   {-# INLINE size #-}
+
 instance Succinct.Dictionary Bool Rank9 where
   rank True xs n = rank1 xs n
   rank False xs n = n - rank1 xs n
@@ -40,6 +41,7 @@ rank1 (Rank9 n ws ps) i
   = BOUNDS_CHECK(checkIndex) "rank" i (n+1)
   $ (ps U.! w) + popCount ((ws U.! w) .&. (bit (bt i) - 1))
   where w = wd i
+{-# INLINE rank1 #-}
 
 wds :: Int -> Int
 wds x = unsafeShiftR (x + 63) 6
