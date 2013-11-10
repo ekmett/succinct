@@ -43,7 +43,7 @@ lbin :: V.Vector (P.Vector Word8)
     PM.unsafeWrite mlbini 0 0
     PM.unsafeWrite mlbini 1 0
     PM.unsafeWrite mlbini i 0
-  F.forM_ [1.._N+1] $ \j -> do
+  F.forM_ [1.._N+1] $ \j ->
     F.forM_ [j+1.._N+1] $ \i -> do
       mbinim1 <- V.unsafeIndexM mbin (i - 1)
       mbini   <- V.unsafeIndexM mbin i

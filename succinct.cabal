@@ -63,15 +63,14 @@ library
 
   exposed-modules:
     Succinct.Dictionary.Class
+    Succinct.Dictionary.Internal.Binomial
+    Succinct.Dictionary.Internal.Bit
+    Succinct.Dictionary.Internal.Broadword
     Succinct.Dictionary.Partitioned
     Succinct.Dictionary.Rank9
-    Succinct.Dictionary.Internal.Broadword
-    Succinct.Dictionary.Internal.Binomial
-    Succinct.Tree.Types
     Succinct.Tree.Binary
     Succinct.Tree.LOUDS
-
-  other-modules:
+    Succinct.Tree.Types
 
 test-suite hlint
   type: exitcode-stdio-1.0
