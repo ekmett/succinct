@@ -3,12 +3,16 @@
 {-# LANGUAGE FlexibleContexts #-}
 module Succinct.Tree.Binary
   (
-  -- * Succinct binary trees
-    Tree(..)
-  , fromTree
-  , toTree
+  -- * Basic binary tree
+    Binary(..)
+  -- * Conversion
+  , jacobson
+  , fromBinary
+  , toBinary
+  , binary
   -- * Succinct binary tree zippers
   , Zipper(..)
+  -- * Operations
   , root
   , top, parent
   , children
@@ -16,7 +20,6 @@ module Succinct.Tree.Binary
   , right
   , tip
   , bin
-  , tree
   ) where
 
 import Control.Comonad
@@ -24,31 +27,31 @@ import Data.Foldable
 import Data.Traversable
 import Succinct.Dictionary.Class
 import Succinct.Dictionary.Rank9 as Rank9
+import Succinct.Tree.Types
 
--- | A binary tree
-data Tree = Bin Tree Tree | Tip deriving (Eq,Ord,Show)
-
--- | Jacobson's encoding of a succinct binary tree
-
-fromTree :: Tree -> Rank9
-fromTree xs = Rank9.fromList $ go 0 where
+-- | Jacobson's encoding of a binary tree
+jacobson :: Binary -> [Bool]
+jacobson xs = go 0 where
   go n = case level n xs [] of
     [] -> []
     ys -> ys ++ go (n+1)
 
-tree :: Ranked t => Zipper t -> Tree
-tree t = case children t of
+fromBinary :: Binary -> Rank9
+fromBinary = Rank9.fromList . jacobson
+
+binary :: Ranked t => Zipper t -> Binary
+binary t = case children t of
   Nothing    -> Tip
-  Just (l,r) -> Bin (tree l) (tree r)
+  Just (l,r) -> Bin (binary l) (binary r)
 
 -- |
 -- @
 -- toTree (fromTree t) = t
 -- @
-toTree :: Ranked t => t -> Tree
-toTree = tree . root
+toBinary :: Ranked t => t -> Binary
+toBinary = binary . root
 
-level :: Int -> Tree -> [Bool] -> [Bool]
+level :: Int -> Binary -> [Bool] -> [Bool]
 level 0 (Bin _ _) xs = True :xs
 level 0 Tip       xs = False:xs
 level n (Bin l r) xs = level (n - 1) l $ level (n - 1) r xs

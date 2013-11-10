@@ -1,6 +1,6 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE FlexibleContexts #-}
-module Succinct.Tree.LOUDS.Single
+module Succinct.Tree.LOUDS.Zipper.Single
   (
   -- * Single indexing
     Zipper(..)
@@ -11,7 +11,7 @@ module Succinct.Tree.LOUDS.Single
   , children
   , next
   -- * LOUDS tree representaton
-  , module Succinct.Tree.LOUDS
+  , module Succinct.Tree.LOUDS.Encoding
   ) where
 
 import Control.Applicative

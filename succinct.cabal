@@ -65,14 +65,12 @@ library
     Succinct.Dictionary.Class
     Succinct.Dictionary.Partitioned
     Succinct.Dictionary.Rank9
+    Succinct.Tree.Types
     Succinct.Tree.Binary
     Succinct.Tree.LOUDS
-    Succinct.Tree.LOUDS.Single
-    Succinct.Tree.LOUDS.Double
 
   other-modules:
     Succinct.Dictionary.Broadword
-
 
 test-suite hlint
   type: exitcode-stdio-1.0
