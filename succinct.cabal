@@ -70,7 +70,7 @@ library
     Succinct.Tree.LOUDS
 
   other-modules:
-    Succinct.Dictionary.Broadword
+    Succinct.Dictionary.Util.Broadword
 
 test-suite hlint
   type: exitcode-stdio-1.0
