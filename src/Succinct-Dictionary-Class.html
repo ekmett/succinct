@@ -26,7 +26,7 @@
 <a name="line-17"></a>
 <a name="line-18"></a><span class='hs-keyword'>import</span> <span class='hs-conid'>Data</span><span class='hs-varop'>.</span><span class='hs-conid'>Bits</span>
 <a name="line-19"></a><span class='hs-keyword'>import</span> <span class='hs-conid'>Data</span><span class='hs-varop'>.</span><span class='hs-conid'>Word</span>
-<a name="line-20"></a><span class='hs-keyword'>import</span> <span class='hs-conid'>Succinct</span><span class='hs-varop'>.</span><span class='hs-conid'>Dictionary</span><span class='hs-varop'>.</span><span class='hs-conid'>Broadword</span>
+<a name="line-20"></a><span class='hs-keyword'>import</span> <span class='hs-conid'>Succinct</span><span class='hs-varop'>.</span><span class='hs-conid'>Dictionary</span><span class='hs-varop'>.</span><span class='hs-conid'>Internal</span><span class='hs-varop'>.</span><span class='hs-conid'>Broadword</span>
 <a name="line-21"></a>
 <a name="line-22"></a><span class='hs-keyword'>class</span> <span class='hs-conid'>Access</span> <span class='hs-varid'>a</span> <span class='hs-varid'>t</span> <span class='hs-keyglyph'>|</span> <span class='hs-varid'>t</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-varid'>a</span> <span class='hs-keyword'>where</span>
 <a name="line-23"></a>  <span class='hs-comment'>-- |</span>
@@ -112,88 +112,99 @@
 <a name="line-103"></a><span class='hs-comment'>-- limited notion of 'select'.</span>
 <a name="line-104"></a><span class='hs-keyword'>class</span> <span class='hs-conid'>Select0</span> <span class='hs-varid'>t</span> <span class='hs-keyword'>where</span>
 <a name="line-105"></a>  <span class='hs-varid'>select0</span> <span class='hs-keyglyph'>::</span> <span class='hs-varid'>t</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-conid'>Int</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-conid'>Int</span>
-<a name="line-106"></a>  <span class='hs-keyword'>default</span> <span class='hs-varid'>select0</span> <span class='hs-keyglyph'>::</span> <span class='hs-conid'>Dictionary</span> <span class='hs-conid'>Bool</span> <span class='hs-varid'>t</span> <span class='hs-keyglyph'>=&gt;</span> <span class='hs-varid'>t</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-conid'>Int</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-conid'>Int</span>
-<a name="line-107"></a>  <span class='hs-varid'>select0</span> <span class='hs-keyglyph'>=</span> <span class='hs-varid'>select</span> <span class='hs-conid'>False</span>
-<a name="line-108"></a>
-<a name="line-109"></a><span class='hs-comment'>-- | Many structures that do not support arbitrary 'rank' can support a</span>
-<a name="line-110"></a><span class='hs-comment'>-- limited notion of 'select'.</span>
-<a name="line-111"></a><span class='hs-keyword'>class</span> <span class='hs-conid'>Select1</span> <span class='hs-varid'>t</span> <span class='hs-keyword'>where</span>
-<a name="line-112"></a>  <span class='hs-varid'>select1</span> <span class='hs-keyglyph'>::</span> <span class='hs-varid'>t</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-conid'>Int</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-conid'>Int</span>
-<a name="line-113"></a>  <span class='hs-keyword'>default</span> <span class='hs-varid'>select1</span> <span class='hs-keyglyph'>::</span> <span class='hs-conid'>Dictionary</span> <span class='hs-conid'>Bool</span> <span class='hs-varid'>t</span> <span class='hs-keyglyph'>=&gt;</span> <span class='hs-varid'>t</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-conid'>Int</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-conid'>Int</span>
-<a name="line-114"></a>  <span class='hs-varid'>select1</span> <span class='hs-keyglyph'>=</span> <span class='hs-varid'>select</span> <span class='hs-conid'>True</span>
-<a name="line-115"></a>
-<a name="line-116"></a><a name="instance%20Select0%20%5ba%5d%20instance%20a%20~%20Bool%20=%3e%20Select1%20%5ba%5d%20instance%20Select0%20Word64"></a><span class='hs-keyword'>instance</span> <span class='hs-varid'>a</span> <span class='hs-keyglyph'>~</span> <span class='hs-conid'>Bool</span> <span class='hs-keyglyph'>=&gt;</span> <span class='hs-conid'>Select0</span> <span class='hs-keyglyph'>[</span><span class='hs-varid'>a</span><span class='hs-keyglyph'>]</span>
-<a name="line-117"></a><a name="instance%20Select1%20%5ba%5d%20instance%20Select0%20Word64"></a><span class='hs-keyword'>instance</span> <span class='hs-varid'>a</span> <span class='hs-keyglyph'>~</span> <span class='hs-conid'>Bool</span> <span class='hs-keyglyph'>=&gt;</span> <span class='hs-conid'>Select1</span> <span class='hs-keyglyph'>[</span><span class='hs-varid'>a</span><span class='hs-keyglyph'>]</span>
-<a name="line-118"></a>
-<a name="line-119"></a><a name="instance%20Select0%20Word64"></a><span class='hs-keyword'>instance</span> <span class='hs-conid'>Select0</span> <span class='hs-conid'>Word64</span> <span class='hs-keyword'>where</span>
-<a name="line-120"></a>  <span class='hs-varid'>select0</span> <span class='hs-varid'>xs</span> <span class='hs-varid'>i</span> <span class='hs-keyglyph'>=</span> <span class='hs-varid'>selectWord64</span> <span class='hs-layout'>(</span><span class='hs-varid'>complement</span> <span class='hs-varid'>xs</span><span class='hs-layout'>)</span> <span class='hs-varid'>i</span>
-<a name="line-121"></a>  <span class='hs-comment'>{-# INLINE select0 #-}</span>
+<a name="line-106"></a><span class='hs-cpp'>#ifndef HLINT</span>
+<a name="line-107"></a>  <span class='hs-keyword'>default</span> <span class='hs-varid'>select0</span> <span class='hs-keyglyph'>::</span> <span class='hs-conid'>Dictionary</span> <span class='hs-conid'>Bool</span> <span class='hs-varid'>t</span> <span class='hs-keyglyph'>=&gt;</span> <span class='hs-varid'>t</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-conid'>Int</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-conid'>Int</span>
+<a name="line-108"></a>  <span class='hs-varid'>select0</span> <span class='hs-keyglyph'>=</span> <span class='hs-varid'>select</span> <span class='hs-conid'>False</span>
+<a name="line-109"></a><span class='hs-cpp'>#endif</span>
+<a name="line-110"></a>
+<a name="line-111"></a><span class='hs-comment'>-- | Many structures that do not support arbitrary 'rank' can support a</span>
+<a name="line-112"></a><span class='hs-comment'>-- limited notion of 'select'.</span>
+<a name="line-113"></a><span class='hs-keyword'>class</span> <span class='hs-conid'>Select1</span> <span class='hs-varid'>t</span> <span class='hs-keyword'>where</span>
+<a name="line-114"></a>  <span class='hs-varid'>select1</span> <span class='hs-keyglyph'>::</span> <span class='hs-varid'>t</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-conid'>Int</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-conid'>Int</span>
+<a name="line-115"></a><span class='hs-cpp'>#ifndef HLINT</span>
+<a name="line-116"></a>  <span class='hs-keyword'>default</span> <span class='hs-varid'>select1</span> <span class='hs-keyglyph'>::</span> <span class='hs-conid'>Dictionary</span> <span class='hs-conid'>Bool</span> <span class='hs-varid'>t</span> <span class='hs-keyglyph'>=&gt;</span> <span class='hs-varid'>t</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-conid'>Int</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-conid'>Int</span>
+<a name="line-117"></a>  <span class='hs-varid'>select1</span> <span class='hs-keyglyph'>=</span> <span class='hs-varid'>select</span> <span class='hs-conid'>True</span>
+<a name="line-118"></a><span class='hs-cpp'>#endif</span>
+<a name="line-119"></a>
+<a name="line-120"></a><a name="instance%20Select0%20%5ba%5d%20instance%20a%20~%20Bool%20=%3e%20Select1%20%5ba%5d%20instance%20Select0%20Word64"></a><span class='hs-keyword'>instance</span> <span class='hs-varid'>a</span> <span class='hs-keyglyph'>~</span> <span class='hs-conid'>Bool</span> <span class='hs-keyglyph'>=&gt;</span> <span class='hs-conid'>Select0</span> <span class='hs-keyglyph'>[</span><span class='hs-varid'>a</span><span class='hs-keyglyph'>]</span>
+<a name="line-121"></a><a name="instance%20Select1%20%5ba%5d%20instance%20Select0%20Word64"></a><span class='hs-keyword'>instance</span> <span class='hs-varid'>a</span> <span class='hs-keyglyph'>~</span> <span class='hs-conid'>Bool</span> <span class='hs-keyglyph'>=&gt;</span> <span class='hs-conid'>Select1</span> <span class='hs-keyglyph'>[</span><span class='hs-varid'>a</span><span class='hs-keyglyph'>]</span>
 <a name="line-122"></a>
-<a name="line-123"></a><a name="instance%20Select1%20Word64"></a><span class='hs-keyword'>instance</span> <span class='hs-conid'>Select1</span> <span class='hs-conid'>Word64</span> <span class='hs-keyword'>where</span>
-<a name="line-124"></a>  <span class='hs-varid'>select1</span> <span class='hs-varid'>xs</span> <span class='hs-varid'>i</span> <span class='hs-keyglyph'>=</span> <span class='hs-varid'>selectWord64</span> <span class='hs-varid'>xs</span> <span class='hs-varid'>i</span>
-<a name="line-125"></a>  <span class='hs-comment'>{-# INLINE select1 #-}</span>
+<a name="line-123"></a><a name="instance%20Select0%20Word64"></a><span class='hs-keyword'>instance</span> <span class='hs-conid'>Select0</span> <span class='hs-conid'>Word64</span> <span class='hs-keyword'>where</span>
+<a name="line-124"></a>  <span class='hs-varid'>select0</span> <span class='hs-varid'>xs</span> <span class='hs-varid'>i</span> <span class='hs-keyglyph'>=</span> <span class='hs-varid'>selectWord64</span> <span class='hs-layout'>(</span><span class='hs-varid'>complement</span> <span class='hs-varid'>xs</span><span class='hs-layout'>)</span> <span class='hs-varid'>i</span>
+<a name="line-125"></a>  <span class='hs-comment'>{-# INLINE select0 #-}</span>
 <a name="line-126"></a>
-<a name="line-127"></a><span class='hs-comment'>-- These are supplied as methods to avoid surprise regarding scoping on imports</span>
-<a name="line-128"></a>
-<a name="line-129"></a><a name="Ranked"></a><span class='hs-comment'>-- | a classic bit-vector-based succinct indexed dictionary</span>
-<a name="line-130"></a><a name="Ranked"></a><span class='hs-comment'>--</span>
-<a name="line-131"></a><a name="Ranked"></a><span class='hs-comment'>-- Given @i = 'select1' t j@</span>
-<a name="line-132"></a><a name="Ranked"></a><span class='hs-comment'>--</span>
-<a name="line-133"></a><a name="Ranked"></a><span class='hs-comment'>-- @</span>
-<a name="line-134"></a><a name="Ranked"></a><span class='hs-comment'>-- 'rank0' t i = i - j</span>
-<a name="line-135"></a><a name="Ranked"></a><span class='hs-comment'>-- 'rank1' t i = j</span>
-<a name="line-136"></a><a name="Ranked"></a><span class='hs-comment'>-- @</span>
-<a name="line-137"></a><a name="Ranked"></a><span class='hs-comment'>--</span>
-<a name="line-138"></a><a name="Ranked"></a><span class='hs-comment'>-- Given @i = 'select0' t j@</span>
-<a name="line-139"></a><a name="Ranked"></a><span class='hs-comment'>--</span>
-<a name="line-140"></a><a name="Ranked"></a><span class='hs-comment'>-- @</span>
-<a name="line-141"></a><a name="Ranked"></a><span class='hs-comment'>-- 'rank0' t i = j</span>
-<a name="line-142"></a><a name="Ranked"></a><span class='hs-comment'>-- 'rank1' t i = i - j</span>
+<a name="line-127"></a><a name="instance%20Select1%20Word64"></a><span class='hs-keyword'>instance</span> <span class='hs-conid'>Select1</span> <span class='hs-conid'>Word64</span> <span class='hs-keyword'>where</span>
+<a name="line-128"></a>  <span class='hs-varid'>select1</span> <span class='hs-varid'>xs</span> <span class='hs-varid'>i</span> <span class='hs-keyglyph'>=</span> <span class='hs-varid'>selectWord64</span> <span class='hs-varid'>xs</span> <span class='hs-varid'>i</span>
+<a name="line-129"></a>  <span class='hs-comment'>{-# INLINE select1 #-}</span>
+<a name="line-130"></a>
+<a name="line-131"></a><span class='hs-comment'>-- These are supplied as methods to avoid surprise regarding scoping on imports</span>
+<a name="line-132"></a>
+<a name="line-133"></a><a name="Ranked"></a><span class='hs-comment'>-- | a classic bit-vector-based succinct indexed dictionary</span>
+<a name="line-134"></a><a name="Ranked"></a><span class='hs-comment'>--</span>
+<a name="line-135"></a><a name="Ranked"></a><span class='hs-comment'>-- For @1 &lt;= i &lt;= size t@:</span>
+<a name="line-136"></a><a name="Ranked"></a><span class='hs-comment'>--</span>
+<a name="line-137"></a><a name="Ranked"></a><span class='hs-comment'>-- @</span>
+<a name="line-138"></a><a name="Ranked"></a><span class='hs-comment'>-- 'rank0' t i + 'rank1' t i = i</span>
+<a name="line-139"></a><a name="Ranked"></a><span class='hs-comment'>-- @</span>
+<a name="line-140"></a><a name="Ranked"></a><span class='hs-comment'>--</span>
+<a name="line-141"></a><a name="Ranked"></a><span class='hs-comment'>-- Given @i = 'select1' t j@</span>
+<a name="line-142"></a><a name="Ranked"></a><span class='hs-comment'>--</span>
 <a name="line-143"></a><a name="Ranked"></a><span class='hs-comment'>-- @</span>
-<a name="line-144"></a><a name="Ranked"></a><span class='hs-keyword'>class</span> <span class='hs-layout'>(</span><span class='hs-conid'>Select0</span> <span class='hs-varid'>t</span><span class='hs-layout'>,</span> <span class='hs-conid'>Select1</span> <span class='hs-varid'>t</span><span class='hs-layout'>,</span> <span class='hs-conid'>Dictionary</span> <span class='hs-conid'>Bool</span> <span class='hs-varid'>t</span><span class='hs-layout'>)</span> <span class='hs-keyglyph'>=&gt;</span> <span class='hs-conid'>Ranked</span> <span class='hs-varid'>t</span> <span class='hs-keyword'>where</span>
-<a name="line-145"></a>  <span class='hs-comment'>-- |</span>
-<a name="line-146"></a>  <span class='hs-comment'>-- @</span>
-<a name="line-147"></a>  <span class='hs-comment'>-- 'rank0' t i = i - 'rank1' t i</span>
-<a name="line-148"></a>  <span class='hs-comment'>-- 'rank0' = 'rank' 'False'</span>
-<a name="line-149"></a>  <span class='hs-comment'>-- @</span>
-<a name="line-150"></a>  <span class='hs-varid'>rank0</span> <span class='hs-keyglyph'>::</span> <span class='hs-conid'>Ranked</span> <span class='hs-varid'>t</span> <span class='hs-keyglyph'>=&gt;</span> <span class='hs-varid'>t</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-conid'>Int</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-conid'>Int</span>
-<a name="line-151"></a>  <span class='hs-varid'>rank0</span> <span class='hs-keyglyph'>=</span> <span class='hs-varid'>rank</span> <span class='hs-conid'>False</span>
-<a name="line-152"></a>
-<a name="line-153"></a>  <span class='hs-comment'>-- |</span>
-<a name="line-154"></a>  <span class='hs-comment'>-- @</span>
-<a name="line-155"></a>  <span class='hs-comment'>-- 'rank1' t i = i - 'rank0' t i</span>
-<a name="line-156"></a>  <span class='hs-comment'>-- 'rank1' = 'rank' 'True'</span>
+<a name="line-144"></a><a name="Ranked"></a><span class='hs-comment'>-- 'rank0' t i = i - j</span>
+<a name="line-145"></a><a name="Ranked"></a><span class='hs-comment'>-- 'rank1' t i = j</span>
+<a name="line-146"></a><a name="Ranked"></a><span class='hs-comment'>-- @</span>
+<a name="line-147"></a><a name="Ranked"></a><span class='hs-comment'>--</span>
+<a name="line-148"></a><a name="Ranked"></a><span class='hs-comment'>-- Given @i = 'select0' t j@</span>
+<a name="line-149"></a><a name="Ranked"></a><span class='hs-comment'>--</span>
+<a name="line-150"></a><a name="Ranked"></a><span class='hs-comment'>-- @</span>
+<a name="line-151"></a><a name="Ranked"></a><span class='hs-comment'>-- 'rank0' t i = j</span>
+<a name="line-152"></a><a name="Ranked"></a><span class='hs-comment'>-- 'rank1' t i = i - j</span>
+<a name="line-153"></a><a name="Ranked"></a><span class='hs-comment'>-- @</span>
+<a name="line-154"></a><a name="Ranked"></a><span class='hs-comment'>--</span>
+<a name="line-155"></a><a name="Ranked"></a><span class='hs-keyword'>class</span> <span class='hs-layout'>(</span><span class='hs-conid'>Select0</span> <span class='hs-varid'>t</span><span class='hs-layout'>,</span> <span class='hs-conid'>Select1</span> <span class='hs-varid'>t</span><span class='hs-layout'>,</span> <span class='hs-conid'>Dictionary</span> <span class='hs-conid'>Bool</span> <span class='hs-varid'>t</span><span class='hs-layout'>)</span> <span class='hs-keyglyph'>=&gt;</span> <span class='hs-conid'>Ranked</span> <span class='hs-varid'>t</span> <span class='hs-keyword'>where</span>
+<a name="line-156"></a>  <span class='hs-comment'>-- |</span>
 <a name="line-157"></a>  <span class='hs-comment'>-- @</span>
-<a name="line-158"></a>  <span class='hs-varid'>rank1</span> <span class='hs-keyglyph'>::</span> <span class='hs-conid'>Ranked</span> <span class='hs-varid'>t</span> <span class='hs-keyglyph'>=&gt;</span> <span class='hs-varid'>t</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-conid'>Int</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-conid'>Int</span>
-<a name="line-159"></a>  <span class='hs-varid'>rank1</span> <span class='hs-keyglyph'>=</span> <span class='hs-varid'>rank</span> <span class='hs-conid'>True</span>
-<a name="line-160"></a>
-<a name="line-161"></a>  <span class='hs-comment'>-- | @'rank_' t i@ return the number of bits to the left of position @i@</span>
-<a name="line-162"></a>  <span class='hs-comment'>--</span>
-<a name="line-163"></a>  <span class='hs-comment'>-- When @i &gt; 1@:</span>
-<a name="line-164"></a>  <span class='hs-comment'>--</span>
+<a name="line-158"></a>  <span class='hs-comment'>-- 'rank0' t i = i - 'rank1' t i</span>
+<a name="line-159"></a>  <span class='hs-comment'>-- 'rank0' = 'rank' 'False'</span>
+<a name="line-160"></a>  <span class='hs-comment'>-- @</span>
+<a name="line-161"></a>  <span class='hs-varid'>rank0</span> <span class='hs-keyglyph'>::</span> <span class='hs-conid'>Ranked</span> <span class='hs-varid'>t</span> <span class='hs-keyglyph'>=&gt;</span> <span class='hs-varid'>t</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-conid'>Int</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-conid'>Int</span>
+<a name="line-162"></a>  <span class='hs-varid'>rank0</span> <span class='hs-keyglyph'>=</span> <span class='hs-varid'>rank</span> <span class='hs-conid'>False</span>
+<a name="line-163"></a>
+<a name="line-164"></a>  <span class='hs-comment'>-- |</span>
 <a name="line-165"></a>  <span class='hs-comment'>-- @</span>
-<a name="line-166"></a>  <span class='hs-comment'>-- 'rank_' t i = 'rank1' t (i - 1)</span>
-<a name="line-167"></a>  <span class='hs-comment'>-- @</span>
-<a name="line-168"></a>  <span class='hs-comment'>--</span>
-<a name="line-169"></a>  <span class='hs-comment'>-- The result is @0@ otherwise.</span>
-<a name="line-170"></a>  <span class='hs-varid'>rank_</span> <span class='hs-keyglyph'>::</span> <span class='hs-conid'>Ranked</span> <span class='hs-varid'>t</span> <span class='hs-keyglyph'>=&gt;</span> <span class='hs-varid'>t</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-conid'>Int</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-conid'>Int</span>
-<a name="line-171"></a>  <span class='hs-varid'>rank_</span> <span class='hs-keyword'>_</span> <span class='hs-num'>1</span> <span class='hs-keyglyph'>=</span> <span class='hs-num'>0</span>
-<a name="line-172"></a>  <span class='hs-varid'>rank_</span> <span class='hs-varid'>t</span> <span class='hs-varid'>i</span> <span class='hs-keyglyph'>=</span> <span class='hs-varid'>rank1</span> <span class='hs-varid'>t</span> <span class='hs-layout'>(</span><span class='hs-varid'>i</span> <span class='hs-comment'>-</span> <span class='hs-num'>1</span><span class='hs-layout'>)</span>
-<a name="line-173"></a>
-<a name="line-174"></a><a name="instance%20Ranked%20t%20--%20%7c%20Offset%20binary%20search%20--%20--%20Assuming%20@l%20%3c=%20h@.%20Returns%20@h@%20if%20the%20predicate%20is%20never%20@True@%20over%20@%5bl..h)@%20search%20::%20(Int%20-%3e%20Bool)%20-%3e%20Int%20-%3e%20Int%20-%3e%20Int%20search%20p%20=%20go"></a><span class='hs-keyword'>instance</span> <span class='hs-layout'>(</span><span class='hs-conid'>Select0</span> <span class='hs-varid'>t</span><span class='hs-layout'>,</span> <span class='hs-conid'>Select1</span> <span class='hs-varid'>t</span><span class='hs-layout'>,</span> <span class='hs-conid'>Dictionary</span> <span class='hs-conid'>Bool</span> <span class='hs-varid'>t</span><span class='hs-layout'>)</span> <span class='hs-keyglyph'>=&gt;</span> <span class='hs-conid'>Ranked</span> <span class='hs-varid'>t</span>
-<a name="line-175"></a>
-<a name="line-176"></a><a name="search"></a><span class='hs-comment'>-- | Offset binary search</span>
-<a name="line-177"></a><span class='hs-comment'>--</span>
-<a name="line-178"></a><span class='hs-comment'>-- Assuming @l &lt;= h@. Returns @h@ if the predicate is never @True@ over @[l..h)@</span>
-<a name="line-179"></a><span class='hs-definition'>search</span> <span class='hs-keyglyph'>::</span> <span class='hs-layout'>(</span><span class='hs-conid'>Int</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-conid'>Bool</span><span class='hs-layout'>)</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-conid'>Int</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-conid'>Int</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-conid'>Int</span>
-<a name="line-180"></a><span class='hs-definition'>search</span> <span class='hs-varid'>p</span> <span class='hs-keyglyph'>=</span> <span class='hs-varid'>go</span> <span class='hs-keyword'>where</span>
-<a name="line-181"></a>  <span class='hs-varid'>go</span> <span class='hs-varid'>l</span> <span class='hs-varid'>h</span>
-<a name="line-182"></a>    <span class='hs-keyglyph'>|</span> <span class='hs-varid'>l</span> <span class='hs-varop'>==</span> <span class='hs-varid'>h</span>    <span class='hs-keyglyph'>=</span> <span class='hs-varid'>l</span>
-<a name="line-183"></a>    <span class='hs-keyglyph'>|</span> <span class='hs-varid'>p</span> <span class='hs-varid'>m</span>       <span class='hs-keyglyph'>=</span> <span class='hs-varid'>go</span> <span class='hs-varid'>l</span> <span class='hs-varid'>m</span>
-<a name="line-184"></a>    <span class='hs-keyglyph'>|</span> <span class='hs-varid'>otherwise</span> <span class='hs-keyglyph'>=</span> <span class='hs-varid'>go</span> <span class='hs-layout'>(</span><span class='hs-varid'>m</span><span class='hs-varop'>+</span><span class='hs-num'>1</span><span class='hs-layout'>)</span> <span class='hs-varid'>h</span>
-<a name="line-185"></a>    <span class='hs-keyword'>where</span> <span class='hs-varid'>hml</span> <span class='hs-keyglyph'>=</span> <span class='hs-varid'>h</span> <span class='hs-comment'>-</span> <span class='hs-varid'>l</span>
-<a name="line-186"></a>          <span class='hs-varid'>m</span> <span class='hs-keyglyph'>=</span> <span class='hs-varid'>l</span> <span class='hs-varop'>+</span> <span class='hs-varid'>unsafeShiftR</span> <span class='hs-varid'>hml</span> <span class='hs-num'>1</span> <span class='hs-varop'>+</span> <span class='hs-varid'>unsafeShiftR</span> <span class='hs-varid'>hml</span> <span class='hs-num'>6</span>
-<a name="line-187"></a><span class='hs-comment'>{-# INLINE search #-}</span>
-<a name="line-188"></a>
+<a name="line-166"></a>  <span class='hs-comment'>-- 'rank1' t i = i - 'rank0' t i</span>
+<a name="line-167"></a>  <span class='hs-comment'>-- 'rank1' = 'rank' 'True'</span>
+<a name="line-168"></a>  <span class='hs-comment'>-- @</span>
+<a name="line-169"></a>  <span class='hs-varid'>rank1</span> <span class='hs-keyglyph'>::</span> <span class='hs-conid'>Ranked</span> <span class='hs-varid'>t</span> <span class='hs-keyglyph'>=&gt;</span> <span class='hs-varid'>t</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-conid'>Int</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-conid'>Int</span>
+<a name="line-170"></a>  <span class='hs-varid'>rank1</span> <span class='hs-keyglyph'>=</span> <span class='hs-varid'>rank</span> <span class='hs-conid'>True</span>
+<a name="line-171"></a>
+<a name="line-172"></a>  <span class='hs-comment'>-- | @'rank_' t i@ return the number of bits to the left of position @i@</span>
+<a name="line-173"></a>  <span class='hs-comment'>--</span>
+<a name="line-174"></a>  <span class='hs-comment'>-- When @i &gt; 1@:</span>
+<a name="line-175"></a>  <span class='hs-comment'>--</span>
+<a name="line-176"></a>  <span class='hs-comment'>-- @</span>
+<a name="line-177"></a>  <span class='hs-comment'>-- 'rank_' t i = 'rank1' t (i - 1)</span>
+<a name="line-178"></a>  <span class='hs-comment'>-- @</span>
+<a name="line-179"></a>  <span class='hs-comment'>--</span>
+<a name="line-180"></a>  <span class='hs-comment'>-- The result is @0@ otherwise.</span>
+<a name="line-181"></a>  <span class='hs-varid'>rank_</span> <span class='hs-keyglyph'>::</span> <span class='hs-conid'>Ranked</span> <span class='hs-varid'>t</span> <span class='hs-keyglyph'>=&gt;</span> <span class='hs-varid'>t</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-conid'>Int</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-conid'>Int</span>
+<a name="line-182"></a>  <span class='hs-varid'>rank_</span> <span class='hs-keyword'>_</span> <span class='hs-num'>1</span> <span class='hs-keyglyph'>=</span> <span class='hs-num'>0</span>
+<a name="line-183"></a>  <span class='hs-varid'>rank_</span> <span class='hs-varid'>t</span> <span class='hs-varid'>i</span> <span class='hs-keyglyph'>=</span> <span class='hs-varid'>rank1</span> <span class='hs-varid'>t</span> <span class='hs-layout'>(</span><span class='hs-varid'>i</span> <span class='hs-comment'>-</span> <span class='hs-num'>1</span><span class='hs-layout'>)</span>
+<a name="line-184"></a>
+<a name="line-185"></a><a name="instance%20Ranked%20t%20--%20%7c%20Offset%20binary%20search%20--%20--%20Assuming%20@l%20%3c=%20h@.%20Returns%20@h@%20if%20the%20predicate%20is%20never%20@True@%20over%20@%5bl..h)@%20search%20::%20(Int%20-%3e%20Bool)%20-%3e%20Int%20-%3e%20Int%20-%3e%20Int%20search%20p%20=%20go"></a><span class='hs-keyword'>instance</span> <span class='hs-layout'>(</span><span class='hs-conid'>Select0</span> <span class='hs-varid'>t</span><span class='hs-layout'>,</span> <span class='hs-conid'>Select1</span> <span class='hs-varid'>t</span><span class='hs-layout'>,</span> <span class='hs-conid'>Dictionary</span> <span class='hs-conid'>Bool</span> <span class='hs-varid'>t</span><span class='hs-layout'>)</span> <span class='hs-keyglyph'>=&gt;</span> <span class='hs-conid'>Ranked</span> <span class='hs-varid'>t</span>
+<a name="line-186"></a>
+<a name="line-187"></a><a name="search"></a><span class='hs-comment'>-- | Offset binary search</span>
+<a name="line-188"></a><span class='hs-comment'>--</span>
+<a name="line-189"></a><span class='hs-comment'>-- Assuming @l &lt;= h@. Returns @h@ if the predicate is never @True@ over @[l..h)@</span>
+<a name="line-190"></a><span class='hs-definition'>search</span> <span class='hs-keyglyph'>::</span> <span class='hs-layout'>(</span><span class='hs-conid'>Int</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-conid'>Bool</span><span class='hs-layout'>)</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-conid'>Int</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-conid'>Int</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-conid'>Int</span>
+<a name="line-191"></a><span class='hs-definition'>search</span> <span class='hs-varid'>p</span> <span class='hs-keyglyph'>=</span> <span class='hs-varid'>go</span> <span class='hs-keyword'>where</span>
+<a name="line-192"></a>  <span class='hs-varid'>go</span> <span class='hs-varid'>l</span> <span class='hs-varid'>h</span>
+<a name="line-193"></a>    <span class='hs-keyglyph'>|</span> <span class='hs-varid'>l</span> <span class='hs-varop'>==</span> <span class='hs-varid'>h</span>    <span class='hs-keyglyph'>=</span> <span class='hs-varid'>l</span>
+<a name="line-194"></a>    <span class='hs-keyglyph'>|</span> <span class='hs-varid'>p</span> <span class='hs-varid'>m</span>       <span class='hs-keyglyph'>=</span> <span class='hs-varid'>go</span> <span class='hs-varid'>l</span> <span class='hs-varid'>m</span>
+<a name="line-195"></a>    <span class='hs-keyglyph'>|</span> <span class='hs-varid'>otherwise</span> <span class='hs-keyglyph'>=</span> <span class='hs-varid'>go</span> <span class='hs-layout'>(</span><span class='hs-varid'>m</span><span class='hs-varop'>+</span><span class='hs-num'>1</span><span class='hs-layout'>)</span> <span class='hs-varid'>h</span>
+<a name="line-196"></a>    <span class='hs-keyword'>where</span> <span class='hs-varid'>hml</span> <span class='hs-keyglyph'>=</span> <span class='hs-varid'>h</span> <span class='hs-comment'>-</span> <span class='hs-varid'>l</span>
+<a name="line-197"></a>          <span class='hs-varid'>m</span> <span class='hs-keyglyph'>=</span> <span class='hs-varid'>l</span> <span class='hs-varop'>+</span> <span class='hs-varid'>unsafeShiftR</span> <span class='hs-varid'>hml</span> <span class='hs-num'>1</span> <span class='hs-varop'>+</span> <span class='hs-varid'>unsafeShiftR</span> <span class='hs-varid'>hml</span> <span class='hs-num'>6</span>
+<a name="line-198"></a><span class='hs-comment'>{-# INLINE search #-}</span>
+<a name="line-199"></a>
 </pre></body>
 </html>
