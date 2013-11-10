@@ -15,6 +15,8 @@ import Control.Monad
 import Data.Bits
 import qualified Data.Vector.Unboxed as U
 import qualified Data.Vector.Unboxed.Mutable as UM
+import qualified Data.Vector.Primitive as P
+import qualified Data.Vector.Primitive.Mutable as PM
 import qualified Data.Vector.Generic as G
 import qualified Data.Vector.Generic.Mutable as GM
 import Data.Word
@@ -36,7 +38,7 @@ newtype Bit = Bit Bool
 
 instance UM.Unbox Bit
 
-data instance UM.MVector s Bit = MV_Bit {-# UNPACK #-} !Int !(UM.MVector s Word64)
+data instance UM.MVector s Bit = MV_Bit {-# UNPACK #-} !Int !(PM.MVector s Word64)
 
 instance GM.MVector U.MVector Bit where
   {-# INLINE basicLength #-}
@@ -72,7 +74,7 @@ instance GM.MVector U.MVector Bit where
   basicUnsafeMove (MV_Bit _ u1) (MV_Bit _ u2) = GM.basicUnsafeMove u1 u2
   basicUnsafeGrow (MV_Bit _ u) n = liftM (MV_Bit n) (GM.basicUnsafeGrow u (wds n))
 
-data instance U.Vector Bit = V_Bit {-# UNPACK #-} !Int !(U.Vector Word64)
+data instance U.Vector Bit = V_Bit {-# UNPACK #-} !Int !(P.Vector Word64)
 instance G.Vector U.Vector Bit where
   {-# INLINE basicLength #-}
   {-# INLINE basicUnsafeFreeze #-}

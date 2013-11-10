@@ -9,6 +9,7 @@
 {-# LANGUAGE UndecidableInstances #-}
 module Succinct.Dictionary.Class
   ( Access(..)
+  , Bitwise(..), Bit(..)
   , Dictionary(..)
   , Select0(..)
   , Select1(..)
@@ -17,7 +18,10 @@ module Succinct.Dictionary.Class
 
 import Data.Bits
 import Data.Word
+import Data.Vector.Unboxed as U
+import Data.Vector.Primitive as P
 import Succinct.Dictionary.Internal.Broadword
+import Succinct.Dictionary.Internal.Bit
 
 class Access a t | t -> a where
   -- |
@@ -31,7 +35,7 @@ class Access a t | t -> a where
 #endif
 
 instance Access a [a] where
-  size = length
+  size = Prelude.length
   {-# INLINE size #-}
 
   (!) = (!!)
@@ -43,6 +47,15 @@ instance Access Bool Word64 where
 
   (!) = testBit
   {-# INLINE (!) #-}
+
+class Bitwise t where
+  bitwise :: t -> U.Vector Bit
+
+instance Bitwise (U.Vector Bit) where
+  bitwise = id
+
+instance Bitwise Word64 where
+  bitwise a = V_Bit 64 (P.singleton a)
 
 -- Succinct indexed dictionaries
 --
