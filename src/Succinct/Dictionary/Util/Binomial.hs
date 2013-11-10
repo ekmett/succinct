@@ -24,6 +24,7 @@ bits :: Word16 -> Word8
 bits = go 0 where
   go i 0 = i
   go i n = go (i + 1) (unsafeShiftR n 1)
+{-# INLINE bits #-}
 
 -- build a fixed sized table of binomial coeffients
 -- bins :: (V.Vector (P.Vector Word16), V.Vector (P.Vector Word8))
@@ -74,17 +75,20 @@ binomial :: Int -> Int -> Int
 binomial n k
   | 0 <= n, n <= _N, 0 <= k, k <= _N = fromIntegral $ P.unsafeIndex (V.unsafeIndex bin n) k
   | otherwise = error "binomial: out of range"
+{-# INLINE binomial #-}
 
 logBinomial :: Int -> Int -> Int
 logBinomial n k
   | 0 <= n, n <= _N, 0 <= k, k <= _N = fromIntegral $ P.unsafeIndex (V.unsafeIndex lbin n) k
   | otherwise = error "logBinomial: out of range"
+{-# INLINE logBinomial #-}
 
 -- | bitmap by class and offset
 --
 -- There are 17 classes @k@ (based on popCount) each with @binomial 16 k@ possible offsets.
 bitmap :: Int -> Int -> Word16
 bitmap k o = bitmaps P.! (fromIntegral (classOffsets P.! k) + o)
+{-# INLINE bitmap #-}
 
 -- | Calculate the offset of a Word16 into its class.
 --
@@ -95,3 +99,4 @@ bitmap k o = bitmaps P.! (fromIntegral (classOffsets P.! k) + o)
 -- @
 offset :: Word16 -> Int
 offset w = fromIntegral (offsets P.! fromIntegral w)
+{-# INLINE offset #-}
