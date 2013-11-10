@@ -71,6 +71,7 @@ library
 
   other-modules:
     Succinct.Dictionary.Util.Broadword
+    Succinct.Dictionary.Util.Binomial
 
 test-suite hlint
   type: exitcode-stdio-1.0
