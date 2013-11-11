@@ -57,6 +57,8 @@ lbin :: V.Vector (P.Vector Word8)
   ys <- V.forM mlbin P.unsafeFreeze
   return (xs,ys)
 
+-- | The sortBy below could be replaced with judicious use of <http://alexbowe.com/popcount-permutations/>
+-- to reduce startup times.
 bitmaps :: P.Vector Word16
 bitmaps = P.fromListN 65536 $ sortBy (compare `on` popCount) [minBound .. maxBound :: Word16]
 
