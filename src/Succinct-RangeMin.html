@@ -7,30 +7,43 @@
 <link type='text/css' rel='stylesheet' href='hscolour.css' />
 </head>
 <body>
-<pre><a name="line-1"></a><span class='hs-comment'>-- TODO: add a Poppy-style 2-level hierarcy</span>
-<a name="line-2"></a><span class='hs-keyword'>module</span> <span class='hs-conid'>Succinct</span><span class='hs-varop'>.</span><span class='hs-conid'>RangeMin</span>
-<a name="line-3"></a>  <span class='hs-layout'>(</span> <span class='hs-conid'>RangeMin</span><span class='hs-layout'>(</span><span class='hs-keyglyph'>..</span><span class='hs-layout'>)</span>
-<a name="line-4"></a>  <span class='hs-layout'>,</span> <span class='hs-varid'>fromBits</span>
-<a name="line-5"></a>  <span class='hs-layout'>)</span> <span class='hs-keyword'>where</span>
-<a name="line-6"></a>
-<a name="line-7"></a><span class='hs-keyword'>import</span> <span class='hs-conid'>Succinct</span><span class='hs-varop'>.</span><span class='hs-conid'>Dictionary</span><span class='hs-varop'>.</span><span class='hs-conid'>Class</span>
-<a name="line-8"></a><span class='hs-keyword'>import</span> <span class='hs-conid'>Succinct</span><span class='hs-varop'>.</span><span class='hs-conid'>Internal</span><span class='hs-varop'>.</span><span class='hs-conid'>Bit</span>
-<a name="line-9"></a><span class='hs-keyword'>import</span> <span class='hs-conid'>Succinct</span><span class='hs-varop'>.</span><span class='hs-conid'>Internal</span><span class='hs-varop'>.</span><span class='hs-conid'>Level</span>
-<a name="line-10"></a><span class='hs-keyword'>import</span> <span class='hs-conid'>Data</span><span class='hs-varop'>.</span><span class='hs-conid'>Vector</span> <span class='hs-keyword'>as</span> <span class='hs-conid'>V</span>
-<a name="line-11"></a><span class='hs-keyword'>import</span> <span class='hs-conid'>Data</span><span class='hs-varop'>.</span><span class='hs-conid'>Vector</span><span class='hs-varop'>.</span><span class='hs-conid'>Unboxed</span> <span class='hs-keyword'>as</span> <span class='hs-conid'>U</span>
-<a name="line-12"></a><span class='hs-keyword'>import</span> <span class='hs-conid'>Data</span><span class='hs-varop'>.</span><span class='hs-conid'>Vector</span><span class='hs-varop'>.</span><span class='hs-conid'>Primitive</span> <span class='hs-keyword'>as</span> <span class='hs-conid'>P</span>
-<a name="line-13"></a><span class='hs-keyword'>import</span> <span class='hs-conid'>Data</span><span class='hs-varop'>.</span><span class='hs-conid'>Word</span>
-<a name="line-14"></a>
-<a name="line-15"></a><a name="RangeMin"></a><span class='hs-comment'>-- delta rangemin tree</span>
-<a name="line-16"></a><a name="RangeMin"></a><span class='hs-keyword'>data</span> <span class='hs-conid'>RangeMin</span> <span class='hs-keyglyph'>=</span> <span class='hs-conid'>RangeMin</span>
-<a name="line-17"></a>  <span class='hs-comment'>{-# UNPACK #-}</span> <span class='hs-varop'>!</span><span class='hs-conid'>Int</span>
-<a name="line-18"></a>  <span class='hs-comment'>{-# UNPACK #-}</span> <span class='hs-varop'>!</span><span class='hs-layout'>(</span><span class='hs-conid'>P</span><span class='hs-varop'>.</span><span class='hs-conid'>Vector</span> <span class='hs-conid'>Word64</span><span class='hs-layout'>)</span>
-<a name="line-19"></a>  <span class='hs-comment'>{-# UNPACK #-}</span> <span class='hs-varop'>!</span><span class='hs-layout'>(</span><span class='hs-conid'>V</span><span class='hs-varop'>.</span><span class='hs-conid'>Vector</span> <span class='hs-conid'>Level</span><span class='hs-layout'>)</span>
+<pre><a name="line-1"></a><span class='hs-comment'>{-# LANGUAGE CPP #-}</span>
+<a name="line-2"></a><span class='hs-comment'>{-# LANGUAGE MultiParamTypeClasses #-}</span>
+<a name="line-3"></a><span class='hs-comment'>-- TODO: add a Poppy-style 2-level hierarcy</span>
+<a name="line-4"></a><span class='hs-keyword'>module</span> <span class='hs-conid'>Succinct</span><span class='hs-varop'>.</span><span class='hs-conid'>RangeMin</span>
+<a name="line-5"></a>  <span class='hs-layout'>(</span> <span class='hs-conid'>RangeMin</span><span class='hs-layout'>(</span><span class='hs-keyglyph'>..</span><span class='hs-layout'>)</span>
+<a name="line-6"></a>  <span class='hs-layout'>,</span> <span class='hs-varid'>fromBits</span>
+<a name="line-7"></a>  <span class='hs-layout'>)</span> <span class='hs-keyword'>where</span>
+<a name="line-8"></a>
+<a name="line-9"></a><span class='hs-keyword'>import</span> <span class='hs-conid'>Succinct</span><span class='hs-varop'>.</span><span class='hs-conid'>Dictionary</span><span class='hs-varop'>.</span><span class='hs-conid'>Class</span>
+<a name="line-10"></a><span class='hs-keyword'>import</span> <span class='hs-conid'>Succinct</span><span class='hs-varop'>.</span><span class='hs-conid'>Internal</span><span class='hs-varop'>.</span><span class='hs-conid'>Bit</span>
+<a name="line-11"></a><span class='hs-keyword'>import</span> <span class='hs-conid'>Succinct</span><span class='hs-varop'>.</span><span class='hs-conid'>Internal</span><span class='hs-varop'>.</span><span class='hs-conid'>Level</span>
+<a name="line-12"></a><span class='hs-keyword'>import</span> <span class='hs-conid'>Data</span><span class='hs-varop'>.</span><span class='hs-conid'>Bits</span>
+<a name="line-13"></a><span class='hs-keyword'>import</span> <span class='hs-conid'>Data</span><span class='hs-varop'>.</span><span class='hs-conid'>Vector</span> <span class='hs-keyword'>as</span> <span class='hs-conid'>V</span>
+<a name="line-14"></a><span class='hs-keyword'>import</span> <span class='hs-conid'>Data</span><span class='hs-varop'>.</span><span class='hs-conid'>Vector</span><span class='hs-varop'>.</span><span class='hs-conid'>Internal</span><span class='hs-varop'>.</span><span class='hs-conid'>Check</span> <span class='hs-keyword'>as</span> <span class='hs-conid'>Ck</span>
+<a name="line-15"></a><span class='hs-keyword'>import</span> <span class='hs-conid'>Data</span><span class='hs-varop'>.</span><span class='hs-conid'>Vector</span><span class='hs-varop'>.</span><span class='hs-conid'>Primitive</span> <span class='hs-keyword'>as</span> <span class='hs-conid'>P</span>
+<a name="line-16"></a><span class='hs-keyword'>import</span> <span class='hs-conid'>Data</span><span class='hs-varop'>.</span><span class='hs-conid'>Vector</span><span class='hs-varop'>.</span><span class='hs-conid'>Unboxed</span> <span class='hs-keyword'>as</span> <span class='hs-conid'>U</span>
+<a name="line-17"></a><span class='hs-keyword'>import</span> <span class='hs-conid'>Data</span><span class='hs-varop'>.</span><span class='hs-conid'>Word</span>
+<a name="line-18"></a>
+<a name="line-19"></a><span class='hs-cpp'>#define BOUNDS_CHECK(f) Ck.f __FILE__ __LINE__ Ck.Bounds</span>
 <a name="line-20"></a>
-<a name="line-21"></a><a name="instance%20Bitwise%20RangeMin"></a><span class='hs-keyword'>instance</span> <span class='hs-conid'>Bitwise</span> <span class='hs-conid'>RangeMin</span> <span class='hs-keyword'>where</span>
-<a name="line-22"></a>  <span class='hs-varid'>bitwise</span> <span class='hs-layout'>(</span><span class='hs-conid'>RangeMin</span> <span class='hs-varid'>n</span> <span class='hs-varid'>bs</span> <span class='hs-keyword'>_</span><span class='hs-layout'>)</span> <span class='hs-keyglyph'>=</span> <span class='hs-conid'>V_Bit</span> <span class='hs-varid'>n</span> <span class='hs-varid'>bs</span>
-<a name="line-23"></a>
-<a name="line-24"></a><a name="fromBits"></a><span class='hs-definition'>fromBits</span> <span class='hs-keyglyph'>::</span> <span class='hs-conid'>U</span><span class='hs-varop'>.</span><span class='hs-conid'>Vector</span> <span class='hs-conid'>Bit</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-conid'>RangeMin</span>
-<a name="line-25"></a><span class='hs-definition'>fromBits</span> <span class='hs-layout'>(</span><span class='hs-conid'>V_Bit</span> <span class='hs-varid'>n</span> <span class='hs-varid'>bs</span><span class='hs-layout'>)</span> <span class='hs-keyglyph'>=</span> <span class='hs-conid'>RangeMin</span> <span class='hs-varid'>n</span> <span class='hs-varid'>bs</span> <span class='hs-layout'>(</span><span class='hs-varid'>levels</span> <span class='hs-varid'>bs</span><span class='hs-layout'>)</span>
+<a name="line-21"></a><a name="RangeMin"></a><span class='hs-keyword'>data</span> <span class='hs-conid'>RangeMin</span> <span class='hs-keyglyph'>=</span> <span class='hs-conid'>RangeMin</span>
+<a name="line-22"></a>  <span class='hs-comment'>{-# UNPACK #-}</span> <span class='hs-varop'>!</span><span class='hs-conid'>Int</span>
+<a name="line-23"></a>  <span class='hs-comment'>{-# UNPACK #-}</span> <span class='hs-varop'>!</span><span class='hs-layout'>(</span><span class='hs-conid'>P</span><span class='hs-varop'>.</span><span class='hs-conid'>Vector</span> <span class='hs-conid'>Word64</span><span class='hs-layout'>)</span>
+<a name="line-24"></a>  <span class='hs-comment'>{-# UNPACK #-}</span> <span class='hs-varop'>!</span><span class='hs-layout'>(</span><span class='hs-conid'>V</span><span class='hs-varop'>.</span><span class='hs-conid'>Vector</span> <span class='hs-conid'>Level</span><span class='hs-layout'>)</span>
+<a name="line-25"></a>
+<a name="line-26"></a><a name="instance%20Access%20Bool%20RangeMin"></a><span class='hs-keyword'>instance</span> <span class='hs-conid'>Access</span> <span class='hs-conid'>Bool</span> <span class='hs-conid'>RangeMin</span> <span class='hs-keyword'>where</span>
+<a name="line-27"></a>  <span class='hs-varid'>size</span> <span class='hs-layout'>(</span><span class='hs-conid'>RangeMin</span> <span class='hs-varid'>n</span> <span class='hs-keyword'>_</span> <span class='hs-keyword'>_</span><span class='hs-layout'>)</span> <span class='hs-keyglyph'>=</span> <span class='hs-varid'>n</span>
+<a name="line-28"></a>  <span class='hs-layout'>(</span><span class='hs-varop'>!</span><span class='hs-layout'>)</span>  <span class='hs-layout'>(</span><span class='hs-conid'>RangeMin</span> <span class='hs-varid'>n</span> <span class='hs-varid'>bs</span> <span class='hs-keyword'>_</span><span class='hs-layout'>)</span> <span class='hs-varid'>i</span>
+<a name="line-29"></a>     <span class='hs-keyglyph'>=</span> <span class='hs-conid'>BOUNDS_CHECK</span><span class='hs-layout'>(</span><span class='hs-varid'>checkIndex</span><span class='hs-layout'>)</span> <span class='hs-str'>"RangeMin.!"</span> <span class='hs-varid'>i</span> <span class='hs-varid'>n</span>
+<a name="line-30"></a>     <span class='hs-varop'>$</span> <span class='hs-varid'>testBit</span> <span class='hs-layout'>(</span><span class='hs-conid'>P</span><span class='hs-varop'>.</span><span class='hs-varid'>unsafeIndex</span> <span class='hs-varid'>bs</span> <span class='hs-varop'>$</span> <span class='hs-varid'>wd</span> <span class='hs-varid'>i</span><span class='hs-layout'>)</span> <span class='hs-layout'>(</span><span class='hs-varid'>bt</span> <span class='hs-varid'>i</span><span class='hs-layout'>)</span>
+<a name="line-31"></a>  <span class='hs-comment'>{-# INLINE (!) #-}</span>
+<a name="line-32"></a>
+<a name="line-33"></a><a name="instance%20Bitwise%20RangeMin"></a><span class='hs-keyword'>instance</span> <span class='hs-conid'>Bitwise</span> <span class='hs-conid'>RangeMin</span> <span class='hs-keyword'>where</span>
+<a name="line-34"></a>  <span class='hs-varid'>bitwise</span> <span class='hs-layout'>(</span><span class='hs-conid'>RangeMin</span> <span class='hs-varid'>n</span> <span class='hs-varid'>bs</span> <span class='hs-keyword'>_</span><span class='hs-layout'>)</span> <span class='hs-keyglyph'>=</span> <span class='hs-conid'>V_Bit</span> <span class='hs-varid'>n</span> <span class='hs-varid'>bs</span>
+<a name="line-35"></a>
+<a name="line-36"></a><a name="fromBits"></a><span class='hs-definition'>fromBits</span> <span class='hs-keyglyph'>::</span> <span class='hs-conid'>U</span><span class='hs-varop'>.</span><span class='hs-conid'>Vector</span> <span class='hs-conid'>Bit</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-conid'>RangeMin</span>
+<a name="line-37"></a><span class='hs-definition'>fromBits</span> <span class='hs-layout'>(</span><span class='hs-conid'>V_Bit</span> <span class='hs-varid'>n</span> <span class='hs-varid'>bs</span><span class='hs-layout'>)</span> <span class='hs-keyglyph'>=</span> <span class='hs-conid'>RangeMin</span> <span class='hs-varid'>n</span> <span class='hs-varid'>bs</span> <span class='hs-layout'>(</span><span class='hs-varid'>levels</span> <span class='hs-varid'>bs</span><span class='hs-layout'>)</span>
+<a name="line-38"></a><span class='hs-comment'>{-# INLINE fromBits #-}</span>
 </pre></body>
 </html>
