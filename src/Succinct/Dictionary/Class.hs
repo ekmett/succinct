@@ -18,10 +18,13 @@ module Succinct.Dictionary.Class
 
 import Data.Bits
 import Data.Word
-import Data.Vector.Unboxed as U
+import Data.Vector.Internal.Check as Ck
 import Data.Vector.Primitive as P
+import Data.Vector.Unboxed as U
 import Succinct.Internal.Broadword
 import Succinct.Internal.Bit
+
+#define BOUNDS_CHECK(f) Ck.f __FILE__ __LINE__ Ck.Bounds
 
 class Access a t | t -> a where
   -- |
@@ -48,14 +51,25 @@ instance Access Bool Word64 where
   (!) = testBit
   {-# INLINE (!) #-}
 
+instance Access Bool (U.Vector Bit) where
+  size (V_Bit n _) = n
+  {-# INLINE size #-}
+
+  (!)  (V_Bit n bs) i
+     = BOUNDS_CHECK(checkIndex) "RangeMin.!" i n
+     $ testBit (P.unsafeIndex bs $ wd i) (bt i)
+  {-# INLINE (!) #-}
+
 class Bitwise t where
   bitwise :: t -> U.Vector Bit
 
 instance Bitwise (U.Vector Bit) where
   bitwise = id
+  {-# INLINE bitwise #-}
 
 instance Bitwise Word64 where
   bitwise a = V_Bit 64 (P.singleton a)
+  {-# INLINE bitwise #-}
 
 -- Succinct indexed dictionaries
 --
@@ -87,7 +101,7 @@ instance Eq a => Dictionary a [a] where
     go acc n (b:bs)
       | a == b    = go (acc + 1) (n-1) bs
       | otherwise = go acc       (n-1) bs
-    go _ _ []  = error "rank []"
+    go _ _ []  = Prelude.error "rank []"
   {-# INLINE rank #-}
 
   select a xs0 n0 = go 0 n0 xs0 where
@@ -95,7 +109,7 @@ instance Eq a => Dictionary a [a] where
     go acc n (b:bs)
       | a == b    = go (acc + 1) (n-1) bs
       | otherwise = go (acc + 1) n     bs
-    go _ _ [] = error "select []"
+    go _ _ [] = Prelude.error "select []"
   {-# INLINE select #-}
 
 -- | /O(1)/ 'rank' and 'select'
