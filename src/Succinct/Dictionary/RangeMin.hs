@@ -21,6 +21,7 @@ data RangeMin = RangeMin
   {-# UNPACK #-} !Int
   {-# UNPACK #-} !(P.Vector Word64)
                  (V.Vector Level) -- last 2 levels should be used only for findClose, otherwise use broadword techniques on the word64s
+  deriving Show
 
 rangeMin :: Bitwise t => t -> RangeMin
 rangeMin t = case bitwise t of
