@@ -82,6 +82,12 @@ instance Select1 t => Select1 (Zipper t) where
   select1 (Zipper _ _ t) i = select1 t i
   {-# INLINE select1 #-}
 
+instance Ranked t => Ranked (Zipper t) where
+  rank0 (Zipper _ _ t) i = rank0 t i
+  {-# INLINE rank0 #-}
+  rank1 (Zipper _ _ t) i = rank1 t i
+  {-# INLINE rank1 #-}
+
 instance Functor Zipper where
   fmap f (Zipper i j a) = Zipper i j (f a)
   {-# INLINE fmap #-}
@@ -145,6 +151,6 @@ rose i = Rose (rose <$> children i)
 -- @
 -- toRose . fromRose = id
 -- @
-toRose :: Ranked t => t -> Rose
+toRose :: Select0 t => t -> Rose
 toRose = rose . root
 {-# INLINE toRose #-}
