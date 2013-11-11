@@ -1,5 +1,5 @@
 -- | Utility functions for the RRR class and offset representation
-module Succinct.Dictionary.Internal.Binomial
+module Succinct.Internal.Binomial
   ( binomial
   , logBinomial
   , bitmap

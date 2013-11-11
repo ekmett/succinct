@@ -2,7 +2,7 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE Trustworthy #-}
-module Succinct.Dictionary.Internal.Bit
+module Succinct.Internal.Bit
   ( Bit(..)
   , wds
   , wd

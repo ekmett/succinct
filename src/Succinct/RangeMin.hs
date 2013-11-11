@@ -5,8 +5,8 @@ module Succinct.RangeMin
   ) where
 
 import Succinct.Dictionary.Class
-import Succinct.Dictionary.Internal.Bit
-import Succinct.RangeMin.Internal.Level
+import Succinct.Internal.Bit
+import Succinct.Internal.Level
 import Data.Vector as V
 import Data.Vector.Unboxed as U
 import Data.Vector.Primitive as P

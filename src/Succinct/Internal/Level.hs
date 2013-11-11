@@ -1,13 +1,13 @@
 {-# LANGUAGE BangPatterns #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
-module Succinct.RangeMin.Internal.Level
+module Succinct.Internal.Level
   ( Level(..)
   , stride
   , levels
   ) where
 
 import Succinct.Dictionary.Class
-import Succinct.RangeMin.Internal.Delta
+import Succinct.Internal.Delta
 import Data.Bits
 import Data.Int
 import Data.Semigroup

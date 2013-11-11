@@ -1,4 +1,4 @@
-module Succinct.RangeMin.Internal.Delta
+module Succinct.Internal.Delta
   ( Delta(..)
   , bool
   , bits

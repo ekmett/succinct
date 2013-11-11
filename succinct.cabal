@@ -64,14 +64,14 @@ library
 
   exposed-modules:
     Succinct.Dictionary.Class
-    Succinct.Dictionary.Internal.Binomial
-    Succinct.Dictionary.Internal.Bit
-    Succinct.Dictionary.Internal.Broadword
     Succinct.Dictionary.Partitioned
     Succinct.Dictionary.Rank9
+    Succinct.Internal.Binomial
+    Succinct.Internal.Bit
+    Succinct.Internal.Broadword
+    Succinct.Internal.Delta
+    Succinct.Internal.Level
     Succinct.RangeMin
-    Succinct.RangeMin.Internal.Delta
-    Succinct.RangeMin.Internal.Level
     Succinct.Tree.Binary
     Succinct.Tree.LOUDS
     Succinct.Tree.Types

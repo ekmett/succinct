@@ -14,7 +14,7 @@ import qualified Data.Vector.Unboxed as U
 import Data.Vector.Internal.Check as Ck
 import Data.Word
 import qualified Succinct.Dictionary.Class as Succinct
-import Succinct.Dictionary.Internal.Bit
+import Succinct.Internal.Bit
 
 #define BOUNDS_CHECK(f) Ck.f __FILE__ __LINE__ Ck.Bounds
 

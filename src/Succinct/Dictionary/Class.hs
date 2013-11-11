@@ -20,8 +20,8 @@ import Data.Bits
 import Data.Word
 import Data.Vector.Unboxed as U
 import Data.Vector.Primitive as P
-import Succinct.Dictionary.Internal.Broadword
-import Succinct.Dictionary.Internal.Bit
+import Succinct.Internal.Broadword
+import Succinct.Internal.Bit
 
 class Access a t | t -> a where
   -- |
