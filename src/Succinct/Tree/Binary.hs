@@ -46,7 +46,7 @@ binary t = case children t of
 
 -- |
 -- @
--- toTree (fromTree t) = t
+-- 'toBinary' ('fromBinary' t) = t
 -- @
 toBinary :: Ranked t => t -> Binary
 toBinary = binary . root
