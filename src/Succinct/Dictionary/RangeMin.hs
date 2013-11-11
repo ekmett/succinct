@@ -3,7 +3,7 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 module Succinct.Dictionary.RangeMin
   ( RangeMin(..)
-  , fromBits
+  , rangeMin
   ) where
 
 import Succinct.Dictionary.Class
@@ -13,7 +13,6 @@ import Data.Bits
 import Data.Vector.Internal.Check as Ck
 import Data.Vector as V
 import Data.Vector.Primitive as P
-import Data.Vector.Unboxed as U
 import Data.Word
 
 #define BOUNDS_CHECK(f) Ck.f __FILE__ __LINE__ Ck.Bounds
@@ -22,6 +21,12 @@ data RangeMin = RangeMin
   {-# UNPACK #-} !Int
   {-# UNPACK #-} !(P.Vector Word64)
                  (V.Vector Level) -- last 2 levels should be used only for findClose, otherwise use broadword techniques on the word64s
+
+rangeMin :: Bitwise t => t -> RangeMin
+rangeMin t = case bitwise t of
+  V_Bit n bs -> RangeMin n bs $ V.fromList $ levels bs
+{-# RULES "rangeMin" rangeMin = id #-}
+{-# INLINE [0] rangeMin #-}
 
 instance Access Bool RangeMin where
   size (RangeMin n _ _) = n
@@ -54,6 +59,3 @@ rank_1 (RangeMin n ws ls) i0
       L16 _ es _ _ -> fromIntegral $ P.unsafeIndex es (i-1)
       L64 _ es _ _ -> fromIntegral $ P.unsafeIndex es (i-1)
 
-fromBits :: U.Vector Bit -> RangeMin
-fromBits (V_Bit n bs) = RangeMin n bs $ V.fromList $ levels bs
-{-# INLINE fromBits #-}
