@@ -69,6 +69,7 @@ library
     Succinct.Dictionary.Internal.Broadword
     Succinct.Dictionary.Partitioned
     Succinct.Dictionary.Rank9
+    Succinct.RangeMin
     Succinct.RangeMin.Internal.Delta
     Succinct.RangeMin.Internal.Level
     Succinct.Tree.Binary
