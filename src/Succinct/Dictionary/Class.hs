@@ -163,8 +163,6 @@ instance Select1 Word64 where
   select1 xs i = selectWord64 xs i
   {-# INLINE select1 #-}
 
--- These are supplied as methods to avoid surprise regarding scoping on imports
-
 -- | a classic bit-vector-based succinct indexed dictionary
 --
 -- For @1 <= i <= size t@:
@@ -186,8 +184,8 @@ instance Select1 Word64 where
 -- 'rank0' t i = j
 -- 'rank1' t i = i - j
 -- @
-
--- | Minimal definition: rank0 or rank1
+--
+-- Minimal definition: 'rank0' or 'rank1', along with 'size' from Access Bool
 class (Select0 t, Select1 t, Dictionary Bool t) => Ranked t where
   -- |
   -- @
