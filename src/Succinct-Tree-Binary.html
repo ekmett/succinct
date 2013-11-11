@@ -55,7 +55,7 @@
 <a name="line-46"></a>
 <a name="line-47"></a><a name="toBinary"></a><span class='hs-comment'>-- |</span>
 <a name="line-48"></a><span class='hs-comment'>-- @</span>
-<a name="line-49"></a><span class='hs-comment'>-- toTree (fromTree t) = t</span>
+<a name="line-49"></a><span class='hs-comment'>-- 'toBinary' ('fromBinary' t) = t</span>
 <a name="line-50"></a><span class='hs-comment'>-- @</span>
 <a name="line-51"></a><span class='hs-definition'>toBinary</span> <span class='hs-keyglyph'>::</span> <span class='hs-conid'>Ranked</span> <span class='hs-varid'>t</span> <span class='hs-keyglyph'>=&gt;</span> <span class='hs-varid'>t</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-conid'>Binary</span>
 <a name="line-52"></a><span class='hs-definition'>toBinary</span> <span class='hs-keyglyph'>=</span> <span class='hs-varid'>binary</span> <span class='hs-varop'>.</span> <span class='hs-varid'>root</span>
