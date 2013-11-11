@@ -17,6 +17,11 @@ import Data.Word
 
 #define BOUNDS_CHECK(f) Ck.f __FILE__ __LINE__ Ck.Bounds
 
+-- | This provides a variant of the basic aggregation used
+-- in <http://arxiv.org/pdf/1111.5220.pdf Grossi and Ottaviano's> Range-Min tree,
+-- which is in turn a simplification of a
+-- <https://www.siam.org/proceedings/alenex/2010/alx10_009_arroyuelod.pdf Range Min-Max> tree
+
 data RangeMin = RangeMin
   {-# UNPACK #-} !Int
   {-# UNPACK #-} !(P.Vector Word64)
