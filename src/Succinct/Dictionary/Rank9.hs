@@ -33,20 +33,19 @@ instance Bitwise Rank9 where
   bitwise (Rank9 n v _) = V_Bit n v
   {-# INLINE bitwise #-}
 
-instance Dictionary Bool Rank9 where
-  rank True xs n = rank_1 xs n
-  rank False xs n = n - rank_1 xs n
-  {-# INLINE rank #-}
+instance Dictionary Bool Rank9
 
 instance Select0 Rank9
 instance Select1 Rank9
 
-rank_1 :: Rank9 -> Int -> Int
-rank_1 (Rank9 n ws ps) i
-  = BOUNDS_CHECK(checkIndex) "rank" i (n+1)
-  $ (ps P.! w) + popCount ((ws P.! w) .&. (bit (bt i) - 1))
-  where w = wd i
-{-# INLINE rank_1 #-}
+instance Ranked Rank9 where
+  rank1 (Rank9 n ws ps) i
+    = BOUNDS_CHECK(checkIndex) "rank" i (n+1)
+    $ (ps P.! w) + popCount ((ws P.! w) .&. (bit (bt i) - 1))
+    where w = wd i
+  {-# INLINE rank1 #-}
+  rank0 t i = i - rank1 t i
+  {-# INLINE rank0 #-}
 
 rank9 :: Bitwise t => t -> Rank9
 rank9 t = case bitwise t of

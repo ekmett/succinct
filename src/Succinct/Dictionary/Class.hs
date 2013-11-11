@@ -89,6 +89,11 @@ class Access a t => Dictionary a t | t -> a where
   -- @'rank' a t i@ returns the # of occurences of @a@ in @t@ up to position @i@
   -- for @0 < i <= 'size' t@
   rank   :: a -> t -> Int -> Int
+#ifndef HLINT
+  default rank :: (Ranked t, a ~ Bool) => a -> t -> Int -> Int
+  rank True t i = rank1 t i
+  rank False t i = rank0 t i
+#endif
 
   -- |
   -- @'select' a t i@ returns the position of the @i@th appearance of @a@ in @t@.
@@ -181,7 +186,8 @@ instance Select1 Word64 where
 -- 'rank0' t i = j
 -- 'rank1' t i = i - j
 -- @
---
+
+-- | Minimal definition: rank0 or rank1
 class (Select0 t, Select1 t, Dictionary Bool t) => Ranked t where
   -- |
   -- @
@@ -189,7 +195,8 @@ class (Select0 t, Select1 t, Dictionary Bool t) => Ranked t where
   -- 'rank0' = 'rank' 'False'
   -- @
   rank0 :: Ranked t => t -> Int -> Int
-  rank0 = rank False
+  rank0 t i = i - rank0 t i
+  {-# INLINE rank0 #-}
 
   -- |
   -- @
@@ -197,7 +204,8 @@ class (Select0 t, Select1 t, Dictionary Bool t) => Ranked t where
   -- 'rank1' = 'rank' 'True'
   -- @
   rank1 :: Ranked t => t -> Int -> Int
-  rank1 = rank True
+  rank1 t i = i - rank1 t i
+  {-# INLINE rank1 #-}
 
   -- | @'rank_' t i@ return the number of bits to the left of position @i@
   --
@@ -212,7 +220,9 @@ class (Select0 t, Select1 t, Dictionary Bool t) => Ranked t where
   rank_ _ 1 = 0
   rank_ t i = rank1 t (i - 1)
 
-instance (Select0 t, Select1 t, Dictionary Bool t) => Ranked t
+  excess :: Ranked t => t -> Int -> Int
+  excess t i = rank1 t i - rank0 t i
+  {-# INLINE excess #-}
 
 -- | Offset binary search
 --

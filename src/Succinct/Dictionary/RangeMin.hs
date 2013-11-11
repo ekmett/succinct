@@ -45,23 +45,19 @@ instance Bitwise RangeMin where
   bitwise (RangeMin n bs _) = V_Bit n bs
   {-# INLINE bitwise #-}
 
-instance Dictionary Bool RangeMin where
-  rank True m i = rank_1 m i
-  rank False m i = i - rank_1 m i
-  {-# INLINE rank #-}
-
+instance Dictionary Bool RangeMin
 instance Select1 RangeMin
 instance Select0 RangeMin
 
-rank_1 :: RangeMin -> Int -> Int
-rank_1 (RangeMin n ws ls) i0
-  = BOUNDS_CHECK(checkIndex) "rank" i0 (n+1)
-  $ go w (V.length ls - 3) $ popCount $ (ws P.! w) .&. (bit (bt i0) - 1)
- where
-  w = wd i0
-  go !_ 0  !acc = acc
-  go i  li acc  = go (unsafeShiftR i 1) (li-1) $!
-    if i .&. 1 == 0 then acc else acc + case V.unsafeIndex ls li of
-      L8  _ es _ _ -> fromIntegral $ P.unsafeIndex es (i-1)
-      L16 _ es _ _ -> fromIntegral $ P.unsafeIndex es (i-1)
-      L64 _ es _ _ -> fromIntegral $ P.unsafeIndex es (i-1)
+instance Ranked RangeMin where
+  rank1 (RangeMin n ws ls) i0
+    = BOUNDS_CHECK(checkIndex) "rank" i0 (n+1)
+    $ go w (V.length ls - 3) $ popCount $ (ws P.! w) .&. (bit (bt i0) - 1)
+   where
+    w = wd i0
+    go !_ 0  !acc = acc
+    go i  li acc  = go (unsafeShiftR i 1) (li-1) $!
+      if i .&. 1 == 0 then acc else acc + case V.unsafeIndex ls li of
+        L8  _ es _ _ -> fromIntegral $ P.unsafeIndex es (i-1)
+        L16 _ es _ _ -> fromIntegral $ P.unsafeIndex es (i-1)
+        L64 _ es _ _ -> fromIntegral $ P.unsafeIndex es (i-1)
