@@ -65,13 +65,13 @@ library
   exposed-modules:
     Succinct.Dictionary.Class
     Succinct.Dictionary.Partitioned
+    Succinct.Dictionary.RangeMin
     Succinct.Dictionary.Rank9
     Succinct.Internal.Binomial
     Succinct.Internal.Bit
     Succinct.Internal.Broadword
     Succinct.Internal.Delta
     Succinct.Internal.Level
-    Succinct.RangeMin
     Succinct.Tree.Binary
     Succinct.Tree.LOUDS
     Succinct.Tree.Types

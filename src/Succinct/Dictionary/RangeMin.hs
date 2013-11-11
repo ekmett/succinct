@@ -1,6 +1,6 @@
 {-# LANGUAGE CPP #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
-module Succinct.RangeMin
+module Succinct.Dictionary.RangeMin
   ( RangeMin(..)
   , fromBits
   ) where
