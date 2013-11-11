@@ -38,6 +38,7 @@ instance Access Bool RangeMin where
 
 instance Bitwise RangeMin where
   bitwise (RangeMin n bs _) = V_Bit n bs
+  {-# INLINE bitwise #-}
 
 instance Dictionary Bool RangeMin where
   rank True m i = rank_1 m i
@@ -59,4 +60,3 @@ rank_1 (RangeMin n ws ls) i0
       L8  _ es _ _ -> fromIntegral $ P.unsafeIndex es (i-1)
       L16 _ es _ _ -> fromIntegral $ P.unsafeIndex es (i-1)
       L64 _ es _ _ -> fromIntegral $ P.unsafeIndex es (i-1)
-
