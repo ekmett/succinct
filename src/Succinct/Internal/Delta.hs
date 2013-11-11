@@ -1,9 +1,10 @@
 module Succinct.Internal.Delta
   ( Delta(..)
+  , minima
   , bool
   , bits
   , byte
-  , e8, m8, n8
+  , e8, d8, n8
   ) where
 
 import Data.Bits
@@ -21,21 +22,24 @@ import Data.Word
 -- which is in turn a simplification of a
 -- <https://www.siam.org/proceedings/alenex/2010/alx10_009_arroyuelod.pdf Range Min-Max> tree
 data Delta = Delta
-  { excess  :: {-# UNPACK #-} !Int
-  , minima  :: {-# UNPACK #-} !Int
-  , nminima :: {-# UNPACK #-} !Int
+  { excess  :: {-# UNPACK #-} !Int -- even when # bits is even, odd when it is odd
+  , delta   :: {-# UNPACK #-} !Int -- minima = excess - delta
+  , nminima :: {-# UNPACK #-} !Int -- # of minima
   } deriving Show
 
 instance Semigroup Delta where
-  Delta e m n <> Delta e' m' n' | m'' <- e + m' = case compare m m'' of
-    LT -> Delta (e + e') m   n
-    EQ -> Delta (e + e') m   (n + n')
-    GT -> Delta (e + e') m'' n'
+  Delta e d n <> Delta e' d' n' = case compare d (d' - e') of
+    LT -> Delta (e + e') d'       n'
+    EQ -> Delta (e + e') (e' + d) (n + n')
+    GT -> Delta (e + e') (e' + d) n
   {-# INLINE (<>) #-}
+
+minima :: Delta -> Int
+minima (Delta e d _) = e - d
 
 bool :: Bool -> Delta
 bool True  = Delta 1 1 1
-bool False = Delta (-1) (-1) 1
+bool False = Delta (-1) 0 1
 {-# INLINE bool #-}
 
 bits :: Bits a => a -> Delta
@@ -44,25 +48,25 @@ bits w = Prelude.foldr1 (<>) $ fmap (bool . testBit w) [0..bitSize w - 1]
 {-# SPECIALIZE bits :: Word16 -> Delta #-}
 {-# SPECIALIZE bits :: Word8  -> Delta #-}
 
-e8s, m8s, n8s :: P.Vector Int8
-(e8s, m8s, n8s) = case U.fromListN 256 $ fmap go [0..255 :: Word8] of
-  V_3 _ (V_Int8 es) (V_Int8 ms) (V_Int8 ns) -> (es, ms, ns)
+e8s, d8s, n8s :: P.Vector Int8
+(e8s, d8s, n8s) = case U.fromListN 256 $ fmap go [0..255 :: Word8] of
+  V_3 _ (V_Int8 es) (V_Int8 ds) (V_Int8 ns) -> (es, ds, ns)
  where
   go i = case bits i of
     Delta e m n -> (fromIntegral e, fromIntegral m, fromIntegral n)
 
 -- | Look up the 'Delta' for a Word8 via LUTs
 byte :: Word8 -> Delta
-byte w = Delta (e8 w) (m8 w) (n8 w)
+byte w = Delta (e8 w) (d8 w) (n8 w)
 {-# INLINE byte #-}
 
 e8 :: Word8 -> Int
 e8 w = fromIntegral $ P.unsafeIndex e8s (fromIntegral w)
 {-# INLINE e8 #-}
 
-m8 :: Word8 -> Int
-m8 w = fromIntegral $ P.unsafeIndex m8s (fromIntegral w)
-{-# INLINE m8 #-}
+d8 :: Word8 -> Int
+d8 w = fromIntegral $ P.unsafeIndex d8s (fromIntegral w)
+{-# INLINE d8 #-}
 
 n8 :: Word8 -> Int
 n8 w = fromIntegral $ P.unsafeIndex n8s (fromIntegral w)
