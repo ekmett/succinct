@@ -11,7 +11,6 @@ import Succinct.Internal.Delta
 import Data.Bits
 import Data.Int
 import Data.Semigroup
-import Data.Vector as V
 import Data.Vector.Unboxed as U
 import Data.Vector.Unboxed.Base as UB
 import Data.Vector.Primitive as P
@@ -60,8 +59,8 @@ s64 :: Delta -> (Int64,Int64,Int64)
 s64 (Delta e m n) = (fromIntegral e, fromIntegral m, fromIntegral n)
 {-# INLINE s64 #-}
 
-levels :: P.Vector Word64 -> V.Vector Level
-levels v = V.fromList $ Prelude.reverse $ go 16 (P.length v * 4)
+levels :: P.Vector Word64 -> [Level]
+levels v = Prelude.reverse $ go 16 (P.length v * 4)
   [ bits s | w <- P.toList v
            , s <- [ fromIntegral w :: Word16
                   , fromIntegral (unsafeShiftR w 16)

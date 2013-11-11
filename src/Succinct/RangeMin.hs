@@ -1,6 +1,5 @@
 {-# LANGUAGE CPP #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
--- TODO: add a Poppy-style 2-level hierarcy
 module Succinct.RangeMin
   ( RangeMin(..)
   , fromBits
@@ -10,7 +9,6 @@ import Succinct.Dictionary.Class
 import Succinct.Internal.Bit
 import Succinct.Internal.Level
 import Data.Bits
-import Data.Vector as V
 import Data.Vector.Internal.Check as Ck
 import Data.Vector.Primitive as P
 import Data.Vector.Unboxed as U
@@ -21,7 +19,7 @@ import Data.Word
 data RangeMin = RangeMin
   {-# UNPACK #-} !Int
   {-# UNPACK #-} !(P.Vector Word64)
-  {-# UNPACK #-} !(V.Vector Level)
+                 [Level] -- last 2 levels should be used only for findClose, otherwise use broadword techniques on the word64s
 
 instance Access Bool RangeMin where
   size (RangeMin n _ _) = n
@@ -32,6 +30,14 @@ instance Access Bool RangeMin where
 
 instance Bitwise RangeMin where
   bitwise (RangeMin n bs _) = V_Bit n bs
+
+instance Dictionary Bool RangeMin where
+  rank True m i = rank_1 m i
+  rank False m i = i - rank_1 m i
+  {-# INLINE rank #-}
+
+rank_1 :: RangeMin -> Int -> Int
+rank_1 = undefined -- (RangeMin n bs ls) i0 = undefined
 
 fromBits :: U.Vector Bit -> RangeMin
 fromBits (V_Bit n bs) = RangeMin n bs (levels bs)
