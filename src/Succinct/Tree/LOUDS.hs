@@ -47,7 +47,7 @@ louds xs = True: False: go 0 where
 
 -- | Convert a finite 'Rose' to 'Rank9'
 fromRose :: Rose -> Rank9
-fromRose = fromList . louds
+fromRose = rank9 . louds
 {-# INLINE fromRose #-}
 
 level :: Int -> Rose -> [Bool] -> [Bool]

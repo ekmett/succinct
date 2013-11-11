@@ -1,4 +1,5 @@
 {-# LANGUAGE CPP #-}
+{-# LANGUAGE BangPatterns #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 module Succinct.Dictionary.RangeMin
   ( RangeMin(..)
@@ -10,6 +11,7 @@ import Succinct.Internal.Bit
 import Succinct.Internal.Level
 import Data.Bits
 import Data.Vector.Internal.Check as Ck
+import Data.Vector as V
 import Data.Vector.Primitive as P
 import Data.Vector.Unboxed as U
 import Data.Word
@@ -19,7 +21,7 @@ import Data.Word
 data RangeMin = RangeMin
   {-# UNPACK #-} !Int
   {-# UNPACK #-} !(P.Vector Word64)
-                 [Level] -- last 2 levels should be used only for findClose, otherwise use broadword techniques on the word64s
+                 (V.Vector Level) -- last 2 levels should be used only for findClose, otherwise use broadword techniques on the word64s
 
 instance Access Bool RangeMin where
   size (RangeMin n _ _) = n
@@ -36,9 +38,22 @@ instance Dictionary Bool RangeMin where
   rank False m i = i - rank_1 m i
   {-# INLINE rank #-}
 
+instance Select1 RangeMin
+instance Select0 RangeMin
+
 rank_1 :: RangeMin -> Int -> Int
-rank_1 = undefined -- (RangeMin n bs ls) i0 = undefined
+rank_1 (RangeMin n ws ls) i0
+  = BOUNDS_CHECK(checkIndex) "rank" i0 (n+1)
+  $ go w (V.length ls - 3) $ popCount $ (ws P.! w) .&. (bit (bt i0) - 1)
+ where
+  w = wd i0
+  go !_ 0  !acc = acc
+  go i  li acc  = go (unsafeShiftR i 1) (li-1) $!
+    if i .&. 1 == 0 then acc else acc + case V.unsafeIndex ls li of
+      L8  _ es _ _ -> fromIntegral $ P.unsafeIndex es (i-1)
+      L16 _ es _ _ -> fromIntegral $ P.unsafeIndex es (i-1)
+      L64 _ es _ _ -> fromIntegral $ P.unsafeIndex es (i-1)
 
 fromBits :: U.Vector Bit -> RangeMin
-fromBits (V_Bit n bs) = RangeMin n bs (levels bs)
+fromBits (V_Bit n bs) = RangeMin n bs $ V.fromList $ levels bs
 {-# INLINE fromBits #-}

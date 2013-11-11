@@ -37,7 +37,7 @@ jacobson xs = go 0 where
     ys -> ys ++ go (n+1)
 
 fromBinary :: Binary -> Rank9
-fromBinary = Rank9.fromList . jacobson
+fromBinary = rank9 . jacobson
 
 binary :: Ranked t => Zipper t -> Binary
 binary t = case children t of

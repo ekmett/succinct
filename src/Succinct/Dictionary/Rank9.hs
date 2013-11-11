@@ -1,13 +1,13 @@
 {-# LANGUAGE CPP #-}
-{-# LANGUAGE TypeFamilies #-}
-{-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE Trustworthy #-}
+{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE DefaultSignatures #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
 module Succinct.Dictionary.Rank9
   ( Rank9(..)
-  , fromList
+  , ToRank9(..)
   ) where
 
-import Control.Applicative
 import Data.Bits
 import qualified Data.Vector.Primitive as P
 import qualified Data.Vector.Unboxed as U
@@ -48,7 +48,15 @@ rank1 (Rank9 n ws ps) i
   where w = wd i
 {-# INLINE rank1 #-}
 
-fromList :: [Bool] -> Rank9
-fromList xs = case U.fromList (Bit <$> xs) of
-  V_Bit n v -> Rank9 n v $ P.scanl (\a b -> a + popCount b) 0 v
-{-# INLINE fromList #-}
+class ToRank9 t where
+  rank9 :: t -> Rank9
+  default rank9 :: Succinct.Bitwise t => t -> Rank9
+  rank9 = rank9 . Succinct.bitwise
+
+instance ToRank9 Rank9 where
+  rank9 = id
+
+instance b ~ Bit => ToRank9 (U.Vector b) where
+  rank9 (V_Bit n v) = Rank9 n v $ P.scanl (\a b -> a + popCount b) 0 v
+
+instance b ~ Bool => ToRank9 [b]

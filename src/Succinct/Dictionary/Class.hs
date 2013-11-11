@@ -63,13 +63,16 @@ instance Access Bool (U.Vector Bit) where
 class Bitwise t where
   bitwise :: t -> U.Vector Bit
 
-instance Bitwise (U.Vector Bit) where
+instance a ~ Bit => Bitwise (U.Vector a) where
   bitwise = id
   {-# INLINE bitwise #-}
 
 instance Bitwise Word64 where
   bitwise a = V_Bit 64 (P.singleton a)
   {-# INLINE bitwise #-}
+
+instance a ~ Bool => Bitwise [a] where
+  bitwise xs = U.fromList (fmap Bit xs)
 
 -- Succinct indexed dictionaries
 --
