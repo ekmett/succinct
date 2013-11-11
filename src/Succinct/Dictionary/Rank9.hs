@@ -25,6 +25,11 @@ instance Succinct.Access Bool Rank9 where
   size (Rank9 n _ _) = n
   {-# INLINE size #-}
 
+  (!) (Rank9 n bs _) i
+     = BOUNDS_CHECK(checkIndex) "Rank9.!" i n
+     $ testBit (P.unsafeIndex bs $ wd i) (bt i)
+  {-# INLINE (!) #-}
+
 instance Succinct.Bitwise Rank9 where
   bitwise (Rank9 n v _) = V_Bit n v
 
