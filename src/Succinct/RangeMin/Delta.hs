@@ -20,10 +20,11 @@ import Data.Word
 -- in <http://arxiv.org/pdf/1111.5220.pdf Grossi and Ottaviano's> Range-Min tree,
 -- which is in turn a simplification of a
 -- <https://www.siam.org/proceedings/alenex/2010/alx10_009_arroyuelod.pdf Range Min-Max> tree
-data Delta = Delta {-# UNPACK #-} !Int -- excess
-                   {-# UNPACK #-} !Int -- minimum
-                   {-# UNPACK #-} !Int -- # of minima
-  deriving Show
+data Delta = Delta
+  { excess  :: {-# UNPACK #-} !Int
+  , minima  :: {-# UNPACK #-} !Int
+  , nminima :: {-# UNPACK #-} !Int
+  } deriving Show
 
 instance Semigroup Delta where
   Delta e m n <> Delta e' m' n' | m'' <- e + m' = case compare m m'' of
