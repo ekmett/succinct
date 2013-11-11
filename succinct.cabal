@@ -63,6 +63,7 @@ library
     cpp-options: -DOS_X
 
   exposed-modules:
+    Succinct.Dictionary
     Succinct.Dictionary.Class
     Succinct.Dictionary.Partitioned
     Succinct.Dictionary.RangeMin
