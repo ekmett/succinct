@@ -34,7 +34,7 @@ import Succinct.Tree.Types
 
 -- | Jacobson's encoding of a binary tree
 jacobson :: Binary -> [Bool]
-jacobson xs = go 0 where
+jacobson xs = True : go 0 where
   go n = case level n xs [] of
     [] -> []
     ys -> ys ++ go (n+1)
