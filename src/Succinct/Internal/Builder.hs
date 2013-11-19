@@ -10,7 +10,6 @@ module Succinct.Internal.Builder
   ) where
 
 import Control.Monad
-import Control.Monad.Primitive
 import Control.Monad.ST
 import Data.Foldable as F
 import qualified Data.Vector.Generic.Mutable as GM
@@ -34,11 +33,11 @@ construct as = runST $ do
 data family Builder (t :: *) :: * -> *
 
 class Buildable t a | t -> a where
-  new    :: PrimMonad m => m (Builder t (PrimState m))
-  snoc   :: PrimMonad m => Builder t (PrimState m) -> a -> m (Builder t (PrimState m))
-  freeze :: PrimMonad m => Builder t (PrimState m) -> m t
+  new    :: ST s (Builder t s)
+  snoc   :: Builder t s -> a -> ST s (Builder t s)
+  freeze :: Builder t s -> ST s t
 
-  unsafeFreeze :: PrimMonad m => Builder t (PrimState m) -> m t
+  unsafeFreeze :: Builder t s -> ST s t
   unsafeFreeze = freeze
 
 newtype instance Builder [a] s = BuildList ([a] -> [a])
@@ -113,8 +112,7 @@ instance P.Prim a => Buildable (P.Vector a) a where
     $ PM.unsafeSlice 0 n v
   {-# INLINE unsafeFreeze #-}
 
-unsafeAppend1 :: (PrimMonad m, GM.MVector v a)
-        => v (PrimState m) a -> Int -> a -> m (v (PrimState m) a)
+unsafeAppend1 :: GM.MVector v a => v s a -> Int -> a -> ST s (v s a)
     -- NOTE: The case distinction has to be on the outside because
     -- GHC creates a join point for the unsafeWrite even when everything
     -- is inlined. This is bad because with the join point, v isn't getting
@@ -134,7 +132,7 @@ enlarge_delta :: GM.MVector v a => v s a -> Int
 enlarge_delta v = max (GM.length v) 1
 
 -- | Grow a vector logarithmically
-enlarge :: (PrimMonad m, GM.MVector v a) => v (PrimState m) a -> m (v (PrimState m) a)
+enlarge :: GM.MVector v a => v s a -> ST s (v s a)
 enlarge v = GM.unsafeGrow v (enlarge_delta v)
 {-# INLINE enlarge #-}
 
