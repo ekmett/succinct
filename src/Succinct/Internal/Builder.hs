@@ -6,10 +6,13 @@
 module Succinct.Internal.Builder
   ( Builder(..)
   , Buildable(..)
+  , construct
   ) where
 
 import Control.Monad
 import Control.Monad.Primitive
+import Control.Monad.ST
+import Data.Foldable as F
 import qualified Data.Vector.Generic.Mutable as GM
 import qualified Data.Vector as V
 import qualified Data.Vector.Mutable as VM
@@ -20,6 +23,13 @@ import qualified Data.Vector.Primitive.Mutable as PM
 import Data.Vector.Internal.Check as Ck
 
 #define INTERNAL_CHECK(f) Ck.f __FILE__ __LINE__ Ck.Internal
+
+construct :: (Foldable f, Buildable t a) => f a -> t
+construct as = runST $ do
+  b <- new
+  b' <- F.foldlM snoc b as
+  unsafeFreeze b'
+{-# INLINE construct #-}
 
 data family Builder (t :: *) :: * -> *
 
@@ -127,3 +137,4 @@ enlarge_delta v = max (GM.length v) 1
 enlarge :: (PrimMonad m, GM.MVector v a) => v (PrimState m) a -> m (v (PrimState m) a)
 enlarge v = GM.unsafeGrow v (enlarge_delta v)
 {-# INLINE enlarge #-}
+
