@@ -44,6 +44,7 @@ library
     base              >= 4     && < 5,
     comonad           >= 4     && < 5,
     ghc-prim,
+    primitive,
     semigroups        >= 0.11  && < 1,
     vector            >= 0.10  && < 0.11
 
@@ -71,6 +72,7 @@ library
     Succinct.Internal.Binomial
     Succinct.Internal.Bit
     Succinct.Internal.Broadword
+    Succinct.Internal.Builder
     Succinct.Internal.Delta
     Succinct.Internal.Level
     Succinct.Internal.Word4
