@@ -43,7 +43,7 @@
 <a name="line-34"></a>
 <a name="line-35"></a><a name="jacobson"></a><span class='hs-comment'>-- | Jacobson's encoding of a binary tree</span>
 <a name="line-36"></a><span class='hs-definition'>jacobson</span> <span class='hs-keyglyph'>::</span> <span class='hs-conid'>Binary</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-keyglyph'>[</span><span class='hs-conid'>Bool</span><span class='hs-keyglyph'>]</span>
-<a name="line-37"></a><span class='hs-definition'>jacobson</span> <span class='hs-varid'>xs</span> <span class='hs-keyglyph'>=</span> <span class='hs-varid'>go</span> <span class='hs-num'>0</span> <span class='hs-keyword'>where</span>
+<a name="line-37"></a><span class='hs-definition'>jacobson</span> <span class='hs-varid'>xs</span> <span class='hs-keyglyph'>=</span> <span class='hs-conid'>True</span> <span class='hs-conop'>:</span> <span class='hs-varid'>go</span> <span class='hs-num'>0</span> <span class='hs-keyword'>where</span>
 <a name="line-38"></a>  <span class='hs-varid'>go</span> <span class='hs-varid'>n</span> <span class='hs-keyglyph'>=</span> <span class='hs-keyword'>case</span> <span class='hs-varid'>level</span> <span class='hs-varid'>n</span> <span class='hs-varid'>xs</span> <span class='hs-conid'>[]</span> <span class='hs-keyword'>of</span>
 <a name="line-39"></a>    <span class='hs-conid'>[]</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-conid'>[]</span>
 <a name="line-40"></a>    <span class='hs-varid'>ys</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-varid'>ys</span> <span class='hs-varop'>++</span> <span class='hs-varid'>go</span> <span class='hs-layout'>(</span><span class='hs-varid'>n</span><span class='hs-varop'>+</span><span class='hs-num'>1</span><span class='hs-layout'>)</span>
