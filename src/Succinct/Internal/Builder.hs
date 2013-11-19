@@ -2,6 +2,7 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE FunctionalDependencies #-}
 module Succinct.Internal.Builder
   ( Builder(..)
   , Buildable(..)
@@ -20,19 +21,19 @@ import Data.Vector.Internal.Check as Ck
 
 #define INTERNAL_CHECK(f) Ck.f __FILE__ __LINE__ Ck.Internal
 
-data family Builder (t :: * -> *) :: * -> * -> *
+data family Builder (t :: *) :: * -> *
 
-class Buildable t a where
-  new    :: PrimMonad m => m (Builder t (PrimState m) a)
-  snoc   :: PrimMonad m => Builder t (PrimState m) a -> a -> m (Builder t (PrimState m) a)
-  freeze :: PrimMonad m => Builder t (PrimState m) a -> m (t a)
+class Buildable t a | t -> a where
+  new    :: PrimMonad m => m (Builder t (PrimState m))
+  snoc   :: PrimMonad m => Builder t (PrimState m) -> a -> m (Builder t (PrimState m))
+  freeze :: PrimMonad m => Builder t (PrimState m) -> m t
 
-  unsafeFreeze :: PrimMonad m => Builder t (PrimState m) a -> m (t a)
+  unsafeFreeze :: PrimMonad m => Builder t (PrimState m) -> m t
   unsafeFreeze = freeze
 
-newtype instance Builder [] s a = BuildList ([a] -> [a])
+newtype instance Builder [a] s = BuildList ([a] -> [a])
 
-instance Buildable [] a where
+instance Buildable [a] a where
   new = return (BuildList id)
   {-# INLINE new #-}
   snoc (BuildList f) a = return $ BuildList (f . (a:))
@@ -40,9 +41,9 @@ instance Buildable [] a where
   freeze (BuildList f) = return $ f []
   {-# INLINE freeze #-}
 
-data instance Builder V.Vector s a = BuildVector {-# UNPACK #-} !Int !(VM.MVector s a)
+data instance Builder (V.Vector a) s = BuildVector {-# UNPACK #-} !Int !(VM.MVector s a)
 
-instance Buildable V.Vector a where
+instance Buildable (V.Vector a) a where
   new = BuildVector 0 `liftM` VM.unsafeNew 0
   {-# INLINE new #-}
   snoc (BuildVector i v) x = do
@@ -62,9 +63,9 @@ instance Buildable V.Vector a where
 
 -- * Vector utilities
 
-data instance Builder U.Vector s a = BuildUVector {-# UNPACK #-} !Int !(UM.MVector s a)
+data instance Builder (U.Vector a) s = BuildUVector {-# UNPACK #-} !Int !(UM.MVector s a)
 
-instance U.Unbox a => Buildable U.Vector a where
+instance U.Unbox a => Buildable (U.Vector a) a where
   new = BuildUVector 0 `liftM` UM.unsafeNew 0
   {-# INLINE new #-}
   snoc (BuildUVector i v) x = do
@@ -82,9 +83,9 @@ instance U.Unbox a => Buildable U.Vector a where
     $ UM.unsafeSlice 0 n v
   {-# INLINE unsafeFreeze #-}
 
-data instance Builder P.Vector s a = BuildPVector {-# UNPACK #-} !Int !(PM.MVector s a)
+data instance Builder (P.Vector a) s = BuildPVector {-# UNPACK #-} !Int !(PM.MVector s a)
 
-instance P.Prim a => Buildable P.Vector a where
+instance P.Prim a => Buildable (P.Vector a) a where
   new = BuildPVector 0 `liftM` PM.unsafeNew 0
   {-# INLINE new #-}
   snoc (BuildPVector i v) x = do
@@ -101,7 +102,6 @@ instance P.Prim a => Buildable P.Vector a where
     $ INTERNAL_CHECK(checkSlice) "runBuilder" 0 n (PM.length v)
     $ PM.unsafeSlice 0 n v
   {-# INLINE unsafeFreeze #-}
-
 
 unsafeAppend1 :: (PrimMonad m, GM.MVector v a)
         => v (PrimState m) a -> Int -> a -> m (v (PrimState m) a)
