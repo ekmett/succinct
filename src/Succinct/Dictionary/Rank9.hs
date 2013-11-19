@@ -56,27 +56,28 @@ rank9 t = case bitwise t of
 {-# RULES "rank9" rank9 = id #-}
 
 data instance Builder Rank9 s
-  = Build9 {-# UNPACK #-} !Int
-           {-# UNPACK #-} !Word64
-           {-# UNPACK #-} !Int
-           !(Builder (P.Vector Word64) s)
-           !(Builder (P.Vector Int) s)
+  = Build9 {-# UNPACK #-} !Int    -- bit position
+           {-# UNPACK #-} !Word64 -- current word
+           {-# UNPACK #-} !Int    -- current rank
+           !(Builder (P.Vector Word64) s) -- words
+           !(Builder (P.Vector Int) s)    -- ranks
 
 instance Buildable Rank9 Bool where
   new = Build9 0 0 0 <$> new <*> new
   {-# INLINE new #-}
   snoc (Build9 n w r ws rs) b
-    | n == 63   = Build9 0 0 (r + popCount w') <$> snoc ws w' <*> snoc rs r
+    | n63 == 63 = Build9 (n + 1) 0 (r + popCount w') <$> snoc ws w' <*> snoc rs r
     | otherwise = return $ Build9 (n + 1) w' r ws rs
-    where w' = if b then setBit w n else w
+    where w' = if b then setBit w n63 else w
+          n63 = n .&. 6333
   {-# INLINE snoc #-}
   freeze (Build9 n w r ws rs)
-    | n == 0 = Rank9 n <$> freeze ws <*> freeze rs
-    | otherwise = Rank9 n <$> (freeze =<< snoc ws w)
-                          <*> (freeze =<< snoc rs r)
+    | n .&. 63 == 0 = Rank9 n <$> freeze ws <*> (snoc rs r >>= freeze)
+    | otherwise = Rank9 n <$> (snoc ws w >>= freeze)
+                          <*> (snoc rs r >>= \rs' -> snoc rs' (r + popCount w) >>= freeze)
   {-# INLINE freeze #-}
   unsafeFreeze (Build9 n w r ws rs)
-    | n == 0 = Rank9 n <$> unsafeFreeze ws <*> unsafeFreeze rs
-    | otherwise = Rank9 n <$> (unsafeFreeze =<< snoc ws w)
-                          <*> (unsafeFreeze =<< snoc rs r)
+    | n .&. 63 == 0 = Rank9 n <$> unsafeFreeze ws <*> unsafeFreeze rs
+    | otherwise = Rank9 n <$> (snoc ws w >>= unsafeFreeze)
+                          <*> (snoc rs r >>= \rs' -> snoc rs' (r + popCount w) >>= unsafeFreeze)
   {-# INLINE unsafeFreeze #-}
