@@ -69,7 +69,7 @@ instance Buildable Rank9 Bool where
     | n63 == 63 = Build9 (n + 1) 0 (r + popCount w') <$> snoc ws w' <*> snoc rs r
     | otherwise = return $ Build9 (n + 1) w' r ws rs
     where w' = if b then setBit w n63 else w
-          n63 = n .&. 6333
+          n63 = n .&. 63
   {-# INLINE snoc #-}
   freeze (Build9 n w r ws rs)
     | n .&. 63 == 0 = Rank9 n <$> freeze ws <*> (snoc rs r >>= freeze)
@@ -77,7 +77,7 @@ instance Buildable Rank9 Bool where
                           <*> (snoc rs r >>= \rs' -> snoc rs' (r + popCount w) >>= freeze)
   {-# INLINE freeze #-}
   unsafeFreeze (Build9 n w r ws rs)
-    | n .&. 63 == 0 = Rank9 n <$> unsafeFreeze ws <*> unsafeFreeze rs
+    | n .&. 63 == 0 = Rank9 n <$> unsafeFreeze ws <*> (snoc rs r >>= unsafeFreeze)
     | otherwise = Rank9 n <$> (snoc ws w >>= unsafeFreeze)
                           <*> (snoc rs r >>= \rs' -> snoc rs' (r + popCount w) >>= unsafeFreeze)
   {-# INLINE unsafeFreeze #-}
