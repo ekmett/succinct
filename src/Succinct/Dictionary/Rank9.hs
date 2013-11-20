@@ -63,9 +63,9 @@ data Build9 a b
            b                      -- ^ rank builder
 
 instance Buildable Bool Rank9 where
-  builder = case vector of
-    Builder kw hw zw -> case vector of
-      Builder kr hr zr -> Builder stop step start
+  builder = Builder $ case vector of
+    Builder (Building kw hw zw) -> case vector of
+      Builder (Building kr hr zr) -> Building stop step start
        where start = Build9 0 0 0 <$> zw <*> zr
              step (Build9 n w r ws rs) b
                | n63 == 63 = Build9 (n + 1) 0 (r + popCount w') <$> hw ws w' <*> hr rs r
