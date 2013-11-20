@@ -34,6 +34,21 @@ instance Profunctor (Builder s) where
   dimap f g (Builder k h z) = Builder (fmap g . k) (\x a -> h x (f a)) z
   {-# INLINE dimap #-}
 
+instance Choice (Builder s) where
+  left' (Builder k h z) = Builder (_Left k) step (Left <$> z) where
+    step (Left x) (Left y) = Left <$> h x y
+    step (Right c) _ = pure $ Right c
+    step _ (Right c) = pure $ Right c
+    _Left f (Left a) = Left <$> f a
+    _Left _ (Right b) = pure $ Right b
+
+  right' (Builder k h z) = Builder (_Right k) step (Right <$> z) where
+    step (Right x) (Right y) = Right <$> h x y
+    step (Left c) _ = pure $ Left c
+    step _ (Left c) = pure $ Left c
+    _Right _ (Left b) = pure $ Left b
+    _Right f (Right a) = Right <$> f a
+
 instance Functor (Builder s a) where
   fmap f (Builder k h z) = Builder (fmap f . k) h z
   {-# INLINE fmap #-}
