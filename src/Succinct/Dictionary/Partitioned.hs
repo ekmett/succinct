@@ -75,16 +75,3 @@ instance Buildable Bool a => Buildable Bool (Partitioned a) where
       stop (BT b x y True) = do
         y' <- h y True
         p b <$> k x <*> k y'
-
-fromListWith :: ([Bool] -> r) -> [Bool] -> Partitioned r
-fromListWith _ [] = PE
-fromListWith f t  = pn (f zeroes) (f ones)
-  where
-    runs = (head &&& length) <$> group (tail t)
-    zeroes = Prelude.foldr (count not) [] runs
-    ones = Prelude.foldr (count id) [] runs
-    count q (x,n) xs
-      | q x       = replicate (n - 1) False ++ (True : xs)
-      | otherwise = xs
-    pn | head t    = P1
-       | otherwise = P0
