@@ -1,3 +1,5 @@
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE FlexibleContexts #-}
 module Succinct.Dictionary.Partitioned
   ( Partitioned(..)
   , fromListWith
@@ -9,6 +11,7 @@ import Data.Foldable
 import Data.List (group)
 import Data.Monoid
 import Data.Traversable
+import Succinct.Dictionary.Builder
 import Succinct.Dictionary.Class
 
 -- | A partitioned succinct dictionary only supports 'select0' and 'select1' operations
@@ -42,15 +45,46 @@ instance Ranked t => Select1 (Partitioned t) where
   select1 (P0 r0 r1) i = select1 r0 (rank_ r1 i + 1) + i
   select1 (P1 r0 r1) i = select1 r0 (rank_ r1 i) + i
 
+data BP a b
+  = BE !(Maybe Bool) a b
+  | BT !Bool a b !Bool
+
+p :: Bool -> a -> a -> Partitioned a
+p False = P0
+p True = P1
+
+instance Buildable Bool a => Buildable Bool (Partitioned a) where
+  builder = Builder $ case builder of
+    Builder (Building k h z) -> Building stop step start where
+      start = BE Nothing <$> z <*> z
+
+      step (BE Nothing x y) b  = return $ BE (Just b) x y
+      step (BE (Just b) x y) c = return $ BT b x y c
+      step (BT b x y True) c = do
+        y' <- h y (not c)
+        return $ BT b x y' c
+      step (BT b x y False) c = do
+        x' <- h x c
+        return $ BT b x' y c
+
+      stop (BE Nothing _ _)  = return PE
+      stop (BE (Just b) x y) = p b <$> k x <*> k y
+      stop (BT b x y False) = do
+        x' <- h x True
+        p b <$> k x' <*> k y
+      stop (BT b x y True) = do
+        y' <- h y True
+        p b <$> k x <*> k y'
+
 fromListWith :: ([Bool] -> r) -> [Bool] -> Partitioned r
 fromListWith _ [] = PE
 fromListWith f t  = pn (f zeroes) (f ones)
   where
-    runs = (head &&& length) <$> group t
+    runs = (head &&& length) <$> group (tail t)
     zeroes = Prelude.foldr (count not) [] runs
     ones = Prelude.foldr (count id) [] runs
-    count p (x,n) xs
-      | p x       = replicate (n - 1) False ++ (True : xs)
+    count q (x,n) xs
+      | q x       = replicate (n - 1) False ++ (True : xs)
       | otherwise = xs
     pn | head t    = P1
        | otherwise = P0
