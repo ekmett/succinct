@@ -28,6 +28,7 @@ instance Choice (Building s) where
     step _ (Right c) = pure $ Right c
     _Left f (Left a) = Left <$> f a
     _Left _ (Right b) = pure $ Right b
+  {-# INLINE left' #-}
 
   right' (Building k h z) = Building (_Right k) step (Right <$> z) where
     step (Right x) (Right y) = Right <$> h x y
@@ -35,6 +36,7 @@ instance Choice (Building s) where
     step _ (Left c) = pure $ Left c
     _Right _ (Left b) = pure $ Left b
     _Right f (Right a) = Right <$> f a
+  {-# INLINE right' #-}
 
 instance Functor (Building s a) where
   fmap f (Building k h z) = Building (fmap f . k) h z

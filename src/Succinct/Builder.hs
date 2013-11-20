@@ -35,17 +35,23 @@ newtype Builder a b = Builder (forall s. Building s a b)
 
 instance Profunctor Builder where
   dimap f g (Builder k) = Builder (dimap f g k)
+  {-# INLINE dimap #-}
 
 instance Choice Builder where
   left' (Builder k) = Builder (left' k)
+  {-# INLINE left' #-}
   right' (Builder k) = Builder (right' k)
+  {-# INLINE right' #-}
 
 instance Functor (Builder a) where
   fmap f (Builder k) = Builder (fmap f k)
+  {-# INLINE fmap #-}
 
 instance Applicative (Builder a) where
   pure a = Builder (pure a)
+  {-# INLINE pure #-}
   Builder mf <*> Builder ma = Builder (mf <*> ma)
+  {-# INLINE (<*>) #-}
 
 build :: (Foldable f, Buildable a b) => f a -> b
 build = buildWith builder
