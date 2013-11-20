@@ -13,9 +13,9 @@ import Data.Bits
 import qualified Data.Vector.Primitive as P
 import Data.Vector.Internal.Check as Ck
 import Data.Word
+import Succinct.Builder
 import Succinct.Dictionary.Class
 import Succinct.Internal.Bit
-import Succinct.Internal.Builder
 
 #define BOUNDS_CHECK(f) Ck.f __FILE__ __LINE__ Ck.Bounds
 
@@ -56,11 +56,11 @@ rank9 t = case bitwise t of
 {-# RULES "rank9" rank9 = id #-}
 
 data Build9 a b
-  = Build9 {-# UNPACK #-} !Int    -- ^ bit position
-           {-# UNPACK #-} !Word64 -- ^ current word
-           {-# UNPACK #-} !Int    -- ^ current rank
-           a                      -- ^ word builder
-           b                      -- ^ rank builder
+  = Build9 {-# UNPACK #-} !Int    -- bit position
+           {-# UNPACK #-} !Word64 -- current word
+           {-# UNPACK #-} !Int    -- current rank
+           a                      -- word builder
+           b                      -- rank builder
 
 instance Buildable Bool Rank9 where
   builder = Builder $ case vector of
