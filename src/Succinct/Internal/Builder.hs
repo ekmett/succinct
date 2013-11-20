@@ -1,138 +1,111 @@
 {-# LANGUAGE CPP #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE Rank2Types #-}
+{-# LANGUAGE GADTs #-}
 {-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE UndecidableInstances #-}
 {-# LANGUAGE FunctionalDependencies #-}
 module Succinct.Internal.Builder
   ( Builder(..)
   , Buildable(..)
-  , construct
+  , build, buildWith
+  , vector
   ) where
 
+import Control.Applicative
 import Control.Monad
 import Control.Monad.ST
 import Data.Foldable as F
+import Data.Profunctor
+import qualified Data.Vector.Generic as G
 import qualified Data.Vector.Generic.Mutable as GM
 import qualified Data.Vector as V
-import qualified Data.Vector.Mutable as VM
 import qualified Data.Vector.Unboxed as U
-import qualified Data.Vector.Unboxed.Mutable as UM
 import qualified Data.Vector.Primitive as P
-import qualified Data.Vector.Primitive.Mutable as PM
 import Data.Vector.Internal.Check as Ck
 
 #define INTERNAL_CHECK(f) Ck.f __FILE__ __LINE__ Ck.Internal
 
-construct :: (Foldable f, Buildable t a) => f a -> t
-construct as = runST $ do
-  b <- new
-  b' <- F.foldlM snoc b as
-  unsafeFreeze b'
-{-# INLINE construct #-}
+data Builder s a b where
+  Builder :: (x -> ST s b) -> (x -> a -> ST s x) -> ST s x -> Builder s a b
 
-data family Builder (t :: *) :: * -> *
+instance Profunctor (Builder s) where
+  dimap f g (Builder k h z) = Builder (fmap g . k) (\x a -> h x (f a)) z
+  {-# INLINE dimap #-}
 
-class Buildable t a | t -> a where
-  new    :: ST s (Builder t s)
-  snoc   :: Builder t s -> a -> ST s (Builder t s)
-  freeze :: Builder t s -> ST s t
+instance Functor (Builder s a) where
+  fmap f (Builder k h z) = Builder (fmap f . k) h z
+  {-# INLINE fmap #-}
 
-  unsafeFreeze :: Builder t s -> ST s t
-  unsafeFreeze = freeze
+instance Applicative (Builder s a) where
+  pure b = Builder (\() -> return b) (\() _ -> return ()) (return ())
+  {-# INLINE pure #-}
+  Builder kf hf zf <*> Builder ka ha za = Builder
+    (\(Pair xf xa) -> kf xf <*> ka xa)
+    (\(Pair xf xa) a -> Pair <$> hf xf a <*> ha xa a)
+    (Pair <$> zf <*> za)
+  {-# INLINE (<*>) #-}
 
-newtype instance Builder [a] s = BuildList ([a] -> [a])
+data Pair a b = Pair !a !b
 
-instance Buildable [a] a where
-  new = return (BuildList id)
-  {-# INLINE new #-}
-  snoc (BuildList f) a = return $ BuildList (f . (a:))
-  {-# INLINE snoc #-}
-  freeze (BuildList f) = return $ f []
-  {-# INLINE freeze #-}
+build :: (Foldable f, Buildable a b) => f a -> b
+build = buildWith builder
+{-# INLINE build #-}
 
-data instance Builder (V.Vector a) s = BuildVector {-# UNPACK #-} !Int !(VM.MVector s a)
+buildWith :: Foldable f => (forall s. Builder s a b) -> f a -> b
+buildWith m as = runST $ case m of
+  Builder k h z -> do
+    b <- z
+    k =<< F.foldlM h b as
+{-# INLINE buildWith #-}
 
-instance Buildable (V.Vector a) a where
-  new = BuildVector 0 `liftM` VM.unsafeNew 0
-  {-# INLINE new #-}
-  snoc (BuildVector i v) x = do
+class Buildable a b | b -> a where
+  builder :: Builder s a b
+
+instance Buildable a [a] where
+  builder = Builder (\k -> return $ k []) (\f a -> return $ f . (a:)) (return id)
+  {-# INLINE builder #-}
+
+instance U.Unbox a => Buildable a (U.Vector a) where
+  builder = vector
+  {-# INLINE builder #-}
+
+instance P.Prim a => Buildable a (P.Vector a) where
+  builder = vector
+  {-# INLINE builder #-}
+
+instance Buildable a (V.Vector a) where
+  builder = vector
+  {-# INLINE builder #-}
+
+data V a = V {-# UNPACK #-} !Int !a
+
+vector :: G.Vector v a => Builder s a (v a)
+vector = Builder stop step start where
+  start = V 0 `liftM` GM.unsafeNew 0
+  step (V i v) x = do
     v' <- unsafeAppend1 v i x
-    return $ BuildVector (i + 1) v'
-  {-# INLINE snoc #-}
-  freeze (BuildVector n v)
-    = V.freeze
-    $ INTERNAL_CHECK(checkSlice) "runBuilder" 0 n (VM.length v)
-    $ VM.unsafeSlice 0 n v
-  {-# INLINE freeze #-}
-  unsafeFreeze (BuildVector n v)
-    = V.unsafeFreeze
-    $ INTERNAL_CHECK(checkSlice) "runBuilder" 0 n (VM.length v)
-    $ VM.unsafeSlice 0 n v
-  {-# INLINE unsafeFreeze #-}
-
--- * Vector utilities
-
-data instance Builder (U.Vector a) s = BuildUVector {-# UNPACK #-} !Int !(UM.MVector s a)
-
-instance U.Unbox a => Buildable (U.Vector a) a where
-  new = BuildUVector 0 `liftM` UM.unsafeNew 0
-  {-# INLINE new #-}
-  snoc (BuildUVector i v) x = do
-    v' <- unsafeAppend1 v i x
-    return $ BuildUVector (i + 1) v'
-  {-# INLINE snoc #-}
-  freeze (BuildUVector n v)
-    = U.freeze
-    $ INTERNAL_CHECK(checkSlice) "runBuilder" 0 n (UM.length v)
-    $ UM.unsafeSlice 0 n v
-  {-# INLINE freeze #-}
-  unsafeFreeze (BuildUVector n v)
-    = U.unsafeFreeze
-    $ INTERNAL_CHECK(checkSlice) "runBuilder" 0 n (UM.length v)
-    $ UM.unsafeSlice 0 n v
-  {-# INLINE unsafeFreeze #-}
-
-data instance Builder (P.Vector a) s = BuildPVector {-# UNPACK #-} !Int !(PM.MVector s a)
-
-instance P.Prim a => Buildable (P.Vector a) a where
-  new = BuildPVector 0 `liftM` PM.unsafeNew 0
-  {-# INLINE new #-}
-  snoc (BuildPVector i v) x = do
-    v' <- unsafeAppend1 v i x
-    return $ BuildPVector (i + 1) v'
-  {-# INLINE snoc #-}
-  freeze (BuildPVector n v)
-    = P.freeze
-    $ INTERNAL_CHECK(checkSlice) "runBuilder" 0 n (PM.length v)
-    $ PM.unsafeSlice 0 n v
-  {-# INLINE freeze #-}
-  unsafeFreeze (BuildPVector n v)
-    = P.unsafeFreeze
-    $ INTERNAL_CHECK(checkSlice) "runBuilder" 0 n (PM.length v)
-    $ PM.unsafeSlice 0 n v
-  {-# INLINE unsafeFreeze #-}
+    return $! V (i + 1) v'
+  stop (V n v)
+    = G.unsafeFreeze
+    $ INTERNAL_CHECK(checkSlice) "runBuilder" 0 n (GM.length v)
+    $ GM.unsafeSlice 0 n v
+{-# INLINE vector #-}
 
 unsafeAppend1 :: GM.MVector v a => v s a -> Int -> a -> ST s (v s a)
-    -- NOTE: The case distinction has to be on the outside because
-    -- GHC creates a join point for the unsafeWrite even when everything
-    -- is inlined. This is bad because with the join point, v isn't getting
-    -- unboxed.
 unsafeAppend1 v i x
   | i < GM.length v = do
-                     GM.unsafeWrite v i x
-                     return v
-  | otherwise    = do
-                     v' <- enlarge v
-                     INTERNAL_CHECK(checkIndex) "unsafeAppend1" i (GM.length v')
-                       $ GM.unsafeWrite v' i x
-                     return v'
+    GM.unsafeWrite v i x
+    return v
+  | otherwise = do
+    v' <- enlarge v
+    INTERNAL_CHECK(checkIndex) "unsafeAppend1" i (GM.length v')
+      $ GM.unsafeWrite v' i x
+    return v'
 {-# INLINE unsafeAppend1 #-}
-
-enlarge_delta :: GM.MVector v a => v s a -> Int
-enlarge_delta v = max (GM.length v) 1
 
 -- | Grow a vector logarithmically
 enlarge :: GM.MVector v a => v s a -> ST s (v s a)
-enlarge v = GM.unsafeGrow v (enlarge_delta v)
+enlarge v = GM.unsafeGrow v (max (GM.length v) 1)
 {-# INLINE enlarge #-}
-

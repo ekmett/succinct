@@ -55,29 +55,25 @@ rank9 t = case bitwise t of
 {-# INLINE [0] rank9 #-}
 {-# RULES "rank9" rank9 = id #-}
 
-data instance Builder Rank9 s
-  = Build9 {-# UNPACK #-} !Int    -- bit position
-           {-# UNPACK #-} !Word64 -- current word
-           {-# UNPACK #-} !Int    -- current rank
-           !(Builder (P.Vector Word64) s) -- words
-           !(Builder (P.Vector Int) s)    -- ranks
+data Build9 a b
+  = Build9 {-# UNPACK #-} !Int    -- ^ bit position
+           {-# UNPACK #-} !Word64 -- ^ current word
+           {-# UNPACK #-} !Int    -- ^ current rank
+           a                      -- ^ word builder
+           b                      -- ^ rank builder
 
-instance Buildable Rank9 Bool where
-  new = Build9 0 0 0 <$> new <*> new
-  {-# INLINE new #-}
-  snoc (Build9 n w r ws rs) b
-    | n63 == 63 = Build9 (n + 1) 0 (r + popCount w') <$> snoc ws w' <*> snoc rs r
-    | otherwise = return $ Build9 (n + 1) w' r ws rs
-    where w' = if b then setBit w n63 else w
-          n63 = n .&. 63
-  {-# INLINE snoc #-}
-  freeze (Build9 n w r ws rs)
-    | n .&. 63 == 0 = Rank9 n <$> freeze ws <*> (snoc rs r >>= freeze)
-    | otherwise = Rank9 n <$> (snoc ws w >>= freeze)
-                          <*> (snoc rs r >>= \rs' -> snoc rs' (r + popCount w) >>= freeze)
-  {-# INLINE freeze #-}
-  unsafeFreeze (Build9 n w r ws rs)
-    | n .&. 63 == 0 = Rank9 n <$> unsafeFreeze ws <*> (snoc rs r >>= unsafeFreeze)
-    | otherwise = Rank9 n <$> (snoc ws w >>= unsafeFreeze)
-                          <*> (snoc rs r >>= \rs' -> snoc rs' (r + popCount w) >>= unsafeFreeze)
-  {-# INLINE unsafeFreeze #-}
+instance Buildable Bool Rank9 where
+  builder = case vector of
+    Builder kw hw zw -> case vector of
+      Builder kr hr zr -> Builder stop step start
+       where start = Build9 0 0 0 <$> zw <*> zr
+             step (Build9 n w r ws rs) b
+               | n63 == 63 = Build9 (n + 1) 0 (r + popCount w') <$> hw ws w' <*> hr rs r
+               | otherwise = return $ Build9 (n + 1) w' r ws rs
+               where w' = if b then setBit w n63 else w
+                     n63 = n .&. 63
+             stop (Build9 n w r ws rs)
+               | n .&. 63 == 0 = Rank9 n <$> kw ws <*> (hr rs r >>= kr)
+               | otherwise = Rank9 n
+                         <$> (hw ws w >>= kw)
+                         <*> (hr rs r >>= \rs' -> hr rs' (r + popCount w) >>= kr)
