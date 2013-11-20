@@ -31,7 +31,7 @@ import Succinct.Internal.Building
 
 #define INTERNAL_CHECK(f) Ck.f __FILE__ __LINE__ Ck.Internal
 
-newtype Builder a b = Builder (forall s. Building s a b)
+newtype Builder a b = Builder (forall s. Building (ST s) a b)
 
 instance Profunctor Builder where
   dimap f g (Builder k) = Builder (dimap f g k)

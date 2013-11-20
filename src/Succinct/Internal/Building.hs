@@ -1,31 +1,28 @@
 {-# LANGUAGE CPP #-}
-{-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE Rank2Types #-}
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE UndecidableInstances #-}
-{-# LANGUAGE FunctionalDependencies #-}
 module Succinct.Internal.Building
   ( Building(..)
   ) where
 
 import Control.Applicative
-import Control.Monad.ST
 import Data.Profunctor
 
-data Building s a b where
-  Building :: (x -> ST s b) -> (x -> a -> ST s x) -> ST s x -> Building s a b
+data Building m a b where
+  Building :: (x -> m b) -> (x -> a -> m x) -> m x -> Building m a b
 
-instance Profunctor (Building s) where
+instance Functor m => Profunctor (Building m) where
   dimap f g (Building k h z) = Building (fmap g . k) (\x a -> h x (f a)) z
   {-# INLINE dimap #-}
 
-instance Choice (Building s) where
+instance Applicative m => Choice (Building m) where
   left' (Building k h z) = Building (_Left k) step (Left <$> z) where
     step (Left x) (Left y) = Left <$> h x y
     step (Right c) _ = pure $ Right c
     step _ (Right c) = pure $ Right c
+
     _Left f (Left a) = Left <$> f a
     _Left _ (Right b) = pure $ Right b
   {-# INLINE left' #-}
@@ -34,16 +31,17 @@ instance Choice (Building s) where
     step (Right x) (Right y) = Right <$> h x y
     step (Left c) _ = pure $ Left c
     step _ (Left c) = pure $ Left c
-    _Right _ (Left b) = pure $ Left b
+
+    _Right _ (Left b)  = pure $ Left b
     _Right f (Right a) = Right <$> f a
   {-# INLINE right' #-}
 
-instance Functor (Building s a) where
+instance Functor m => Functor (Building m a) where
   fmap f (Building k h z) = Building (fmap f . k) h z
   {-# INLINE fmap #-}
 
-instance Applicative (Building s a) where
-  pure b = Building (\() -> return b) (\() _ -> return ()) (return ())
+instance Applicative m => Applicative (Building m a) where
+  pure b = Building (\() -> pure b) (\() _ -> pure ()) (pure ())
   {-# INLINE pure #-}
   Building kf hf zf <*> Building ka ha za = Building
     (\(Pair xf xa) -> kf xf <*> ka xa)
