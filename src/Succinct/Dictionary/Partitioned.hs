@@ -2,13 +2,10 @@
 {-# LANGUAGE FlexibleContexts #-}
 module Succinct.Dictionary.Partitioned
   ( Partitioned(..)
-  , fromListWith
   ) where
 
 import Control.Applicative
-import Control.Arrow
 import Data.Foldable
-import Data.List (group)
 import Data.Monoid
 import Data.Traversable
 import Succinct.Dictionary.Builder
