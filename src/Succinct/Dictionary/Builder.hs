@@ -6,7 +6,7 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE UndecidableInstances #-}
 {-# LANGUAGE FunctionalDependencies #-}
-module Succinct.Builder
+module Succinct.Dictionary.Builder
   ( Builder(..)
   , Buildable(..)
   , build

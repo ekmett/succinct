@@ -13,7 +13,7 @@ import Data.Bits
 import qualified Data.Vector.Primitive as P
 import Data.Vector.Internal.Check as Ck
 import Data.Word
-import Succinct.Builder
+import Succinct.Dictionary.Builder
 import Succinct.Dictionary.Class
 import Succinct.Internal.Bit
 
