@@ -20,6 +20,7 @@ data RRR = RRR
   !(P.Vector Int)     -- offset offsets -- one offset for every 512 bits
   !(U.Vector Word4)   -- classes by sub-bock -- one class for every 15 bits out to 510 bits, the last 2 bits are just stored directly in the offset array.
   !(P.Vector Word64)  -- packed offsets: 34 per block w/ 2 bits between
+  deriving Show
 
 data BuildRRR w x y z = BuildRRR
   {-# UNPACK #-} !Int    -- bits seen
@@ -63,7 +64,7 @@ instance Buildable Bool RRR where
             where super = n .&. 511
           stop (BuildRRR n sb r _ rs oos cs os) = do
             let super = n .&. _SUPERBLOCK_MASK
-                k = _BLOCK_SIZE - 1 - mod (n .&. _SUPERBLOCK_MASK) _BLOCK_SIZE
+                k = _BLOCKS_PER_SUPERBLOCK - 1 - div (n .&. _SUPERBLOCK_MASK) _BLOCK_SIZE
                 c = popCount sb
                 delta = logBinomial _BLOCK_SIZE c
                 ofs = offset sb
