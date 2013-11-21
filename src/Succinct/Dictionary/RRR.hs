@@ -59,9 +59,10 @@ instance Buildable Bool RRR where
             EQ -> BuildRRR (n + 1) sb (r + fromEnum b) (o + 1) rs oos cs <$> ho os (Bit b)
             GT -> do
               rs'  <- hi rs r
-              oos' <- hi oos o
+              let o' = o + 1
+              oos' <- hi oos o'
               os'  <- ho os (Bit b)
-              return $ BuildRRR (n + 1) sb (r + fromEnum b) (o + 1) rs' oos' cs os'
+              return $ BuildRRR (n + 1) sb (r + fromEnum b) o' rs' oos' cs os'
             where super = n .&. 511
           stop (BuildRRR n sb r _ rs oos cs os) = do
             let super = n .&. _SUPERBLOCK_MASK
