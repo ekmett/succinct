@@ -10,12 +10,17 @@ module Succinct.Internal.Building
 import Control.Applicative
 import Data.Profunctor
 
+-- | @foldlM@ as a data structure
 data Building m a b where
   Building :: (x -> m b) -> (x -> a -> m x) -> m x -> Building m a b
 
 instance Functor m => Profunctor (Building m) where
   dimap f g (Building k h z) = Building (fmap g . k) (\x a -> h x (f a)) z
   {-# INLINE dimap #-}
+  rmap g (Building k h z) = Building (rmap g . k) h z
+  {-# INLINE fmap #-}
+  lmap f (Building k h z) = Building k (\x a -> h x (f a)) z
+  {-# INLINE fmap #-}
 
 instance Applicative m => Choice (Building m) where
   left' (Building k h z) = Building (_Left k) step (Left <$> z) where
