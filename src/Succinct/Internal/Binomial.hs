@@ -72,7 +72,7 @@ offsets
   $ sortBy (on compare fst)
   $ Prelude.zip (P.toList bitmaps) [0..]
 
--- @'binomial' n k@ returns @n `choose` k@ for @n, k <= 15@
+-- @'binomial' n k@ returns @n `choose` k@ for @n, k <= 16@
 binomial :: Int -> Int -> Int
 binomial n k
   | 0 <= n, n <= _N, 0 <= k, k <= _N = fromIntegral $ P.unsafeIndex (V.unsafeIndex bin n) k
@@ -87,7 +87,7 @@ logBinomial n k
 
 -- | bitmap by class and offset
 --
--- There are 17 classes @k@ (based on popCount) each with @binomial 16 k@ possible offsets.
+-- There are 17 classes @k@ (based on popCount) each with @binomial 16 k@ possible offsets in a 'Word16'
 bitmap :: Int -> Int -> Word16
 bitmap k o = bitmaps P.! (fromIntegral (classOffsets P.! k) + o)
 {-# INLINE bitmap #-}
