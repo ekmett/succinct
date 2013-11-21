@@ -17,10 +17,10 @@ data Building m a b where
 instance Functor m => Profunctor (Building m) where
   dimap f g (Building k h z) = Building (fmap g . k) (\x a -> h x (f a)) z
   {-# INLINE dimap #-}
-  rmap g (Building k h z) = Building (rmap g . k) h z
-  {-# INLINE fmap #-}
+  rmap g (Building k h z) = Building (fmap g . k) h z
+  {-# INLINE rmap #-}
   lmap f (Building k h z) = Building k (\x a -> h x (f a)) z
-  {-# INLINE fmap #-}
+  {-# INLINE lmap #-}
 
 instance Applicative m => Choice (Building m) where
   left' (Building k h z) = Building (_Left k) step (Left <$> z) where
