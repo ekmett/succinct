@@ -71,6 +71,7 @@ library
     Succinct.Dictionary.Partitioned
     Succinct.Dictionary.RangeMin
     Succinct.Dictionary.Rank9
+    Succinct.Dictionary.RRR
     Succinct.Internal.Binomial
     Succinct.Internal.Bit
     Succinct.Internal.Broadword
