@@ -64,12 +64,12 @@
 <a name="line-55"></a><span class='hs-comment'>{-# INLINE [0] rank9 #-}</span>
 <a name="line-56"></a><span class='hs-comment'>{-# RULES "rank9" rank9 = id #-}</span>
 <a name="line-57"></a>
-<a name="line-58"></a><a name="Build9"></a><span class='hs-keyword'>data</span> <span class='hs-conid'>Build9</span> <span class='hs-varid'>a</span> <span class='hs-varid'>b</span>
-<a name="line-59"></a>  <span class='hs-keyglyph'>=</span> <span class='hs-conid'>Build9</span> <span class='hs-comment'>{-# UNPACK #-}</span> <span class='hs-varop'>!</span><span class='hs-conid'>Int</span>    <span class='hs-comment'>-- bit position</span>
-<a name="line-60"></a>           <span class='hs-comment'>{-# UNPACK #-}</span> <span class='hs-varop'>!</span><span class='hs-conid'>Word64</span> <span class='hs-comment'>-- current word</span>
-<a name="line-61"></a>           <span class='hs-comment'>{-# UNPACK #-}</span> <span class='hs-varop'>!</span><span class='hs-conid'>Int</span>    <span class='hs-comment'>-- current rank</span>
-<a name="line-62"></a>           <span class='hs-varid'>a</span>                      <span class='hs-comment'>-- word builder</span>
-<a name="line-63"></a>           <span class='hs-varid'>b</span>                      <span class='hs-comment'>-- rank builder</span>
+<a name="line-58"></a><a name="Build9"></a><span class='hs-keyword'>data</span> <span class='hs-conid'>Build9</span> <span class='hs-varid'>a</span> <span class='hs-varid'>b</span> <span class='hs-keyglyph'>=</span> <span class='hs-conid'>Build9</span>
+<a name="line-59"></a>  <span class='hs-comment'>{-# UNPACK #-}</span> <span class='hs-varop'>!</span><span class='hs-conid'>Int</span>    <span class='hs-comment'>-- bit position</span>
+<a name="line-60"></a>  <span class='hs-comment'>{-# UNPACK #-}</span> <span class='hs-varop'>!</span><span class='hs-conid'>Word64</span> <span class='hs-comment'>-- current word</span>
+<a name="line-61"></a>  <span class='hs-comment'>{-# UNPACK #-}</span> <span class='hs-varop'>!</span><span class='hs-conid'>Int</span>    <span class='hs-comment'>-- current rank</span>
+<a name="line-62"></a>  <span class='hs-varid'>a</span>                      <span class='hs-comment'>-- word builder</span>
+<a name="line-63"></a>  <span class='hs-varid'>b</span>                      <span class='hs-comment'>-- rank builder</span>
 <a name="line-64"></a>
 <a name="line-65"></a><a name="instance%20Buildable%20Bool%20Rank9"></a><span class='hs-keyword'>instance</span> <span class='hs-conid'>Buildable</span> <span class='hs-conid'>Bool</span> <span class='hs-conid'>Rank9</span> <span class='hs-keyword'>where</span>
 <a name="line-66"></a>  <span class='hs-varid'>builder</span> <span class='hs-keyglyph'>=</span> <span class='hs-conid'>Builder</span> <span class='hs-varop'>$</span> <span class='hs-keyword'>case</span> <span class='hs-varid'>vector</span> <span class='hs-keyword'>of</span>
@@ -86,5 +86,6 @@
 <a name="line-77"></a>               <span class='hs-keyglyph'>|</span> <span class='hs-varid'>otherwise</span> <span class='hs-keyglyph'>=</span> <span class='hs-conid'>Rank9</span> <span class='hs-varid'>n</span>
 <a name="line-78"></a>                         <span class='hs-varop'>&lt;$&gt;</span> <span class='hs-layout'>(</span><span class='hs-varid'>hw</span> <span class='hs-varid'>ws</span> <span class='hs-varid'>w</span> <span class='hs-varop'>&gt;&gt;=</span> <span class='hs-varid'>kw</span><span class='hs-layout'>)</span>
 <a name="line-79"></a>                         <span class='hs-varop'>&lt;*&gt;</span> <span class='hs-layout'>(</span><span class='hs-varid'>hr</span> <span class='hs-varid'>rs</span> <span class='hs-varid'>r</span> <span class='hs-varop'>&gt;&gt;=</span> <span class='hs-keyglyph'>\</span><span class='hs-varid'>rs'</span> <span class='hs-keyglyph'>-&gt;</span> <span class='hs-varid'>hr</span> <span class='hs-varid'>rs'</span> <span class='hs-layout'>(</span><span class='hs-varid'>r</span> <span class='hs-varop'>+</span> <span class='hs-varid'>popCount</span> <span class='hs-varid'>w</span><span class='hs-layout'>)</span> <span class='hs-varop'>&gt;&gt;=</span> <span class='hs-varid'>kr</span><span class='hs-layout'>)</span>
+<a name="line-80"></a>  <span class='hs-comment'>{-# INLINE builder #-}</span>
 </pre></body>
 </html>
