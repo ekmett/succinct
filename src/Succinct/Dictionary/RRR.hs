@@ -44,31 +44,34 @@ instance Access Bool RRR where
   size (RRR n _ _ _ _) = n
 
   (!) (RRR n _ oos cs os) i
-     = BOUNDS_CHECK(checkIndex) "RRR.!" i n $ case divMod i _BLOCK_SIZE of
-       (q, r) -> case U.unsafeIndex cs q of
-         c -- | c' == 0           -> False
-           -- | c' == _BLOCK_SIZE -> True
+     = BOUNDS_CHECK(checkIndex) "RRR.!" i n $ case div i _BLOCK_SIZE of
+       q -> case U.unsafeIndex cs q of
+         c | c' == 0           -> False
+           | c' == _BLOCK_SIZE -> True
            | otherwise -> case div i _SUPERBLOCK_SIZE of
              q1 -> go (q1 * _BLOCKS_PER_SUPERBLOCK) $! P.unsafeIndex oos q1 where
                go !co !oo
                 | co < q    = go (co + 1) (oo + lc)
-                | otherwise = testBit (bitmap c' o) r
-                where
-                  lc = logBinomial _BLOCK_SIZE c'
-                  w = wd oo
-                  b = bt oo
-                  o = fromIntegral $ (bit lc - 1) .&.
-                        if b + lc < 64
-                        then unsafeShiftR (P.unsafeIndex os w) b
-                        else unsafeShiftR (P.unsafeIndex os w) b
-                         .|. unsafeShiftL (P.unsafeIndex os $ w+1) (64 - b)
+                | otherwise = testBit (bitmap c' $ fromIntegral $ decode64 oo lc os) $ mod i _BLOCK_SIZE
+                where lc = logBinomial _BLOCK_SIZE c'
            where c' = fromIntegral c
-
-instance Dictionary Bool RRR where
 
 instance Select0 RRR
 instance Select1 RRR
-instance Ranked RRR
+instance Dictionary Bool RRR
+
+instance Ranked RRR where
+  rank1 (RRR n rs oos cs os) i
+     = BOUNDS_CHECK(checkIndex) "RRR.!" i (n + 1)
+     $ case divMod i _BLOCK_SIZE of
+         (q,r) -> case div i (_SUPERBLOCK_SIZE) of
+           q1 -> go (P.unsafeIndex rs q1) (q1 * _BLOCKS_PER_SUPERBLOCK) (P.unsafeIndex oos q1) where
+             go !acc !co !oo
+               | co < q    = go (acc + c) (co + 1) (oo + lc)
+               | otherwise = acc + fromIntegral (popCount ((bitmap c $ fromIntegral $ decode64 oo lc os) .&. (bit r - 1)))
+               where c = fromIntegral (U.unsafeIndex cs i)
+                     lc = logBinomial _BLOCK_SIZE c
+  rank0 rrr i = i - rank1 rrr i
 
 data BuildRRR w x y z = BuildRRR
   {-# UNPACK #-} !Int    -- bits seen
@@ -84,14 +87,14 @@ setBit' a _ False = a
 
 -- We could get much faster construction working a Word at a time.
 instance Buildable Bool RRR where
-  builder = Builder $ case vector :: Builder Int (P.Vector Int) of
-    Builder (Building ki hi zi) -> case vector :: Builder Word4 (U.Vector Word4) of
-      Builder (Building kc hc zc) -> case vector :: Builder Bit (U.Vector Bit) of
+  builder = Builder $ case vector of
+    Builder (Building ki hi zi) -> case vector of
+      Builder (Building kc hc zc) -> case vector of
         Builder (Building ko ho zo) -> Building stop step start where
 
           start = BuildRRR 0 0 0 0
-              <$> (zi >>= \zi' -> hi zi' 0)
-              <*> (zi >>= \zi' -> hi zi' 0)
+              <$> (zi >>= \rs -> hi rs 0)   -- start at 0 rank
+              <*> (zi >>= \oos -> hi oos 0) -- start at 0 offset
               <*> zc
               <*> zo
 
@@ -102,8 +105,8 @@ instance Buildable Bool RRR where
                   delta = logBinomial _BLOCK_SIZE c
                   o' = o + delta
                   ofs = offset sb'
-              os' <- foldlM (\osr oi -> ho osr $ Bit $ testBit ofs oi) os [0..delta-1]
-              cs' <- hc cs (fromIntegral c :: Word4)
+              os' <- foldlM (\osr -> ho osr . Bit . testBit ofs) os [0..delta-1]
+              cs' <- hc cs (fromIntegral c)
               if mod n _SUPERBLOCK_SIZE /= _SUPERBLOCK_SIZE - 1
                 then return $ BuildRRR n' 0 r' o' rs oos cs' os'
                 else do
@@ -115,15 +118,13 @@ instance Buildable Bool RRR where
                   n'  = n + 1
                   r'  = r + fromEnum b
 
-          stop (BuildRRR n sb r o rs oos cs os) = do
+          stop (BuildRRR n sb _r _o rs oos cs os) = do
             let c     = popCount sb
                 delta = logBinomial _BLOCK_SIZE c
-                o'    = o + delta
+                -- o'    = o + delta
                 ofs   = offset sb
-            rs'  <- hi rs r   >>= ki
-            oos' <- hi oos o' >>= ki
-            cs'  <- hc cs (fromIntegral c :: Word4)
-                -- >>= \cs' -> foldlM (\csr _ -> hc csr 0) cs' [0..34]
-                >>= kc
-            V_Bit _ os' <- foldlM (\osr oi -> ho osr $ Bit $ testBit ofs oi) os [0..delta-1] >>= ko
+            rs'  <- ki rs  -- hi rs r   >>= ki
+            oos' <- ki oos -- hi oos o' >>= ki
+            cs'  <- hc cs (fromIntegral c) >>= \cs' -> hc cs' 0 >>= kc
+            V_Bit _ os' <- foldlM (\osr -> ho osr . Bit . testBit ofs) os [0..delta-1] >>= ko
             return $ RRR n rs' oos' cs' os'
