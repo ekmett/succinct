@@ -88,8 +88,8 @@ logBinomial n k
 -- | bitmap by class and offset
 --
 -- There are 17 classes @k@ (based on popCount) each with @binomial 16 k@ possible offsets in a 'Word16'
-bitmap :: Int -> Int -> Word16
-bitmap k o = bitmaps P.! (fromIntegral (classOffsets P.! k) + o)
+bitmap :: Int -> Word16 -> Word16
+bitmap k o = bitmaps P.! (fromIntegral (classOffsets P.! fromIntegral k) + fromIntegral o)
 {-# INLINE bitmap #-}
 
 -- | Calculate the offset of a Word16 into its class.
@@ -97,8 +97,8 @@ bitmap k o = bitmaps P.! (fromIntegral (classOffsets P.! k) + o)
 -- You can use @popCount@ to calculate the class.
 --
 -- @
--- bitmap (popCount w) (offset w) = w
+-- 'bitmap' ('popCount' w) ('offset' w) = w
 -- @
-offset :: Word16 -> Int
+offset :: Word16 -> Word16
 offset w = fromIntegral (offsets P.! fromIntegral w)
 {-# INLINE offset #-}
