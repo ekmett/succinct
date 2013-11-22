@@ -46,8 +46,8 @@ instance Access Bool RRR where
   (!) (RRR n _ oos cs os) i
      = BOUNDS_CHECK(checkIndex) "RRR.!" i n $ case divMod i _BLOCK_SIZE of
        (q, r) -> case U.unsafeIndex cs q of
-         0 -> False
-         c | c' == _BLOCK_SIZE -> True
+         c -- | c' == 0           -> False
+           -- | c' == _BLOCK_SIZE -> True
            | otherwise -> case div i _SUPERBLOCK_SIZE of
              q1 -> go (q1 * _BLOCKS_PER_SUPERBLOCK) $! P.unsafeIndex oos q1 where
                go !co !oo
@@ -55,13 +55,13 @@ instance Access Bool RRR where
                 | otherwise = testBit (bitmap c' o) r
                 where
                   lc = logBinomial _BLOCK_SIZE c'
-                  lm = bit lc - 1
                   w = wd oo
                   b = bt oo
-                  o = fromIntegral $
-                      ( unsafeShiftR (P.unsafeIndex os w) b .|. if w == wd (oo + lc - 1) then 0 else
-                        unsafeShiftL (P.unsafeIndex os $ w+1) (64-b)
-                      ) .&. lm
+                  o = fromIntegral $ (bit lc - 1) .&.
+                        if b + lc < 64
+                        then unsafeShiftR (P.unsafeIndex os w) b
+                        else unsafeShiftR (P.unsafeIndex os w) b
+                         .|. unsafeShiftL (P.unsafeIndex os $ w+1) (64 - b)
            where c' = fromIntegral c
 
 instance Dictionary Bool RRR where
@@ -122,6 +122,8 @@ instance Buildable Bool RRR where
                 ofs   = offset sb
             rs'  <- hi rs r   >>= ki
             oos' <- hi oos o' >>= ki
-            cs'  <- hc cs (fromIntegral c :: Word4) >>= kc
+            cs'  <- hc cs (fromIntegral c :: Word4)
+                -- >>= \cs' -> foldlM (\csr _ -> hc csr 0) cs' [0..34]
+                >>= kc
             V_Bit _ os' <- foldlM (\osr oi -> ho osr $ Bit $ testBit ofs oi) os [0..delta-1] >>= ko
             return $ RRR n rs' oos' cs' os'
