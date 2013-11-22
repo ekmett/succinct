@@ -76,6 +76,7 @@ library
     Succinct.Internal.Bit
     Succinct.Internal.Broadword
     Succinct.Internal.Building
+    Succinct.Internal.Decoding
     Succinct.Internal.Delta
     Succinct.Internal.Level
     Succinct.Internal.Word4
