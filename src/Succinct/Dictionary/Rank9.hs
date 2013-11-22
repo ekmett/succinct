@@ -55,12 +55,12 @@ rank9 t = case bitwise t of
 {-# INLINE [0] rank9 #-}
 {-# RULES "rank9" rank9 = id #-}
 
-data Build9 a b
-  = Build9 {-# UNPACK #-} !Int    -- bit position
-           {-# UNPACK #-} !Word64 -- current word
-           {-# UNPACK #-} !Int    -- current rank
-           a                      -- word builder
-           b                      -- rank builder
+data Build9 a b = Build9
+  {-# UNPACK #-} !Int    -- bit position
+  {-# UNPACK #-} !Word64 -- current word
+  {-# UNPACK #-} !Int    -- current rank
+  a                      -- word builder
+  b                      -- rank builder
 
 instance Buildable Bool Rank9 where
   builder = Builder $ case vector of
@@ -77,3 +77,4 @@ instance Buildable Bool Rank9 where
                | otherwise = Rank9 n
                          <$> (hw ws w >>= kw)
                          <*> (hr rs r >>= \rs' -> hr rs' (r + popCount w) >>= kr)
+  {-# INLINE builder #-}
