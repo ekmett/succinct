@@ -18,7 +18,7 @@ import Data.Word
 
 -- maximum binomial term
 _N :: Int
-_N = 16
+_N = 15
 
 bits :: Word16 -> Word8
 bits = go 0 where
@@ -60,7 +60,7 @@ lbin :: V.Vector (P.Vector Word8)
 -- | The sortBy below could be replaced with judicious use of <http://alexbowe.com/popcount-permutations/>
 -- to reduce startup times.
 bitmaps :: P.Vector Word16
-bitmaps = P.fromListN 65536 $ sortBy (compare `on` popCount) [minBound .. maxBound :: Word16]
+bitmaps = P.fromListN 32768 $ sortBy (compare `on` popCount) [0..0x7fff]
 
 classOffsets :: P.Vector Word16
 classOffsets = P.fromListN (_N+1) $ List.scanl (\a k -> a + fromIntegral (binomial _N k)) 0 [0.._N]
@@ -72,7 +72,7 @@ offsets
   $ sortBy (on compare fst)
   $ Prelude.zip (P.toList bitmaps) [0..]
 
--- @'binomial' n k@ returns @n `choose` k@ for @n, k <= 16@
+-- @'binomial' n k@ returns @n `choose` k@ for @n, k <= 15@
 binomial :: Int -> Int -> Int
 binomial n k
   | 0 <= n, n <= _N, 0 <= k, k <= _N = fromIntegral $ P.unsafeIndex (V.unsafeIndex bin n) k
@@ -87,14 +87,14 @@ logBinomial n k
 
 -- | bitmap by class and offset
 --
--- There are 17 classes @k@ (based on popCount) each with @binomial 16 k@ possible offsets in a 'Word16'
+-- There are 16 classes @k@ (based on popCount) each with @binomial 15 k@ possible offsets in a 'Word16' with the msb unset
 bitmap :: Int -> Word16 -> Word16
 bitmap k o = bitmaps P.! (fromIntegral (classOffsets P.! fromIntegral k) + fromIntegral o)
 {-# INLINE bitmap #-}
 
 -- | Calculate the offset of a Word16 into its class.
 --
--- You can use @popCount@ to calculate the class.
+-- You can use @popCount@ to calculate the class, given @w <= 0x7fff@
 --
 -- @
 -- 'bitmap' ('popCount' w) ('offset' w) = w

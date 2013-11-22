@@ -24,7 +24,7 @@ import Data.Vector.Internal.Check as Ck
 _SUPERBLOCK_SIZE :: Int
 _SUPERBLOCK_SIZE = 960 -- = lcm 64 15
 
--- | @ 7 <= '_BLOCK_SIZE' <= 15@
+-- | @ _BLOCK_SIZE = 15@ -- you need to change a lot of code to change this number
 _BLOCK_SIZE :: Int
 _BLOCK_SIZE = 15
 
@@ -39,22 +39,21 @@ data RRR = RRR
   !(P.Vector Word64)  -- packed offsets       -- 64 per superblock, each 'logBinomial' class bits
   deriving Show
 
-
 instance Access Bool RRR where
   size (RRR n _ _ _ _) = n
 
   (!) (RRR n _ oos cs os) i
      = BOUNDS_CHECK(checkIndex) "RRR.!" i n $ case div i _BLOCK_SIZE of
        q -> case U.unsafeIndex cs q of
-         c | c' == 0           -> False
-           | c' == _BLOCK_SIZE -> True
-           | otherwise -> case div i _SUPERBLOCK_SIZE of
-             q1 -> go (q1 * _BLOCKS_PER_SUPERBLOCK) $! P.unsafeIndex oos q1 where
-               go !co !oo
-                | co < q    = go (co + 1) (oo + lc)
-                | otherwise = testBit (bitmap c' $ fromIntegral $ decode64 oo lc os) $ mod i _BLOCK_SIZE
-                where lc = logBinomial _BLOCK_SIZE c'
-           where c' = fromIntegral c
+         c0 | c0 == 0  -> False
+            | c0 == 15 -> True
+            | otherwise -> case div i _SUPERBLOCK_SIZE of
+              q1 -> go (q1 * _BLOCKS_PER_SUPERBLOCK) $! P.unsafeIndex oos q1 where
+                go !co !oo
+                 | co < q    = go (co + 1) (oo + lc)
+                 | otherwise = testBit (bitmap c $ fromIntegral $ decode64 oo lc os) $ mod i _BLOCK_SIZE
+                 where c = fromIntegral (U.unsafeIndex cs co)
+                       lc = logBinomial _BLOCK_SIZE c
 
 instance Select0 RRR
 instance Select1 RRR
@@ -69,7 +68,7 @@ instance Ranked RRR where
              go !acc !co !oo
                | co < q    = go (acc + c) (co + 1) (oo + lc)
                | otherwise = acc + fromIntegral (popCount ((bitmap c $ fromIntegral $ decode64 oo lc os) .&. (bit r - 1)))
-               where c = fromIntegral (U.unsafeIndex cs i)
+               where c = fromIntegral (U.unsafeIndex cs co)
                      lc = logBinomial _BLOCK_SIZE c
   rank0 rrr i = i - rank1 rrr i
 
