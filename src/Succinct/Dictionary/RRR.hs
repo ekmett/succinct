@@ -21,16 +21,23 @@ import Data.Vector.Internal.Check as Ck
 
 #define BOUNDS_CHECK(f) Ck.f __FILE__ __LINE__ Ck.Bounds
 
--- | @'_SUPERBLOCK_SIZE' = '_BLOCKSIZE' * '_BLOCKS_PER_SUPERBLOCK'@
+-- |
+-- >>> _SUPERBLOCK_SIZE = _BLOCKS_PER_SUPERBLOCK * _BLOCK_SIZE
+-- True
 _SUPERBLOCK_SIZE :: Int
 _SUPERBLOCK_SIZE = 960 -- = lcm 64 15
+{-# INLINE _SUPERBLOCK_SIZE #-}
 
--- | @ _BLOCK_SIZE = 15@ -- you need to change a lot of code to change this number
+-- |
+-- >>> _BLOCK_SIZE == 15
+-- True
 _BLOCK_SIZE :: Int
 _BLOCK_SIZE = 15
+{-# INLINE _BLOCK_SIZE #-}
 
 _BLOCKS_PER_SUPERBLOCK :: Int
 _BLOCKS_PER_SUPERBLOCK = 64
+{-# INLINE _BLOCKS_PER_SUPERBLOCK #-}
 
 data RRR = RRR
   {-# UNPACK #-} !Int -- bit count
@@ -72,6 +79,7 @@ instance Ranked RRR where
                where c = fromIntegral (U.unsafeIndex cs co)
                      lc = logBinomial _BLOCK_SIZE c
   rank0 rrr i = i - rank1 rrr i
+  {-# INLINE rank0 #-}
 
 data BuildRRR w x y z = BuildRRR
   {-# UNPACK #-} !Int    -- bits seen
@@ -127,3 +135,4 @@ instance Buildable Bool RRR where
             cs'  <- hc cs (fromIntegral c) >>= kc
             V_Bit _ os' <- foldlM (\osr -> ho osr . Bit . testBit ofs) os [0..delta-1] >>= ko
             return $ RRR n rs' oos' cs' os'
+  {-# INLINE builder #-}
