@@ -1,6 +1,7 @@
 {-# LANGUAGE CPP #-}
 {-# LANGUAGE BangPatterns #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
+-- | Raman, Raman, and Rao's succinct indexed dictionary
 module Succinct.Dictionary.RRR
   ( RRR(..)
   ) where
@@ -120,10 +121,9 @@ instance Buildable Bool RRR where
           stop (BuildRRR n sb _r _o rs oos cs os) = do
             let c     = popCount sb
                 delta = logBinomial _BLOCK_SIZE c
-                -- o'    = o + delta
                 ofs   = offset sb
-            rs'  <- ki rs  -- hi rs r   >>= ki
-            oos' <- ki oos -- hi oos o' >>= ki
-            cs'  <- hc cs (fromIntegral c) >>= \cs' -> hc cs' 0 >>= kc
+            rs'  <- ki rs
+            oos' <- ki oos
+            cs'  <- hc cs (fromIntegral c) >>= kc
             V_Bit _ os' <- foldlM (\osr -> ho osr . Bit . testBit ofs) os [0..delta-1] >>= ko
             return $ RRR n rs' oos' cs' os'
