@@ -2,8 +2,11 @@
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE Trustworthy #-}
+{-# LANGUAGE DefaultSignatures #-}
+{-# LANGUAGE FlexibleInstances #-}
 module Succinct.Internal.Bit
   ( Bit(..)
+  , Decode64(..)
   , wds
   , wd
   , bt
@@ -13,6 +16,7 @@ module Succinct.Internal.Bit
 
 import Control.Monad
 import Data.Bits
+import Data.Int
 import qualified Data.Vector.Unboxed as U
 import qualified Data.Vector.Unboxed.Mutable as UM
 import qualified Data.Vector.Primitive as P
@@ -32,6 +36,36 @@ wd x = unsafeShiftR x 6
 bt :: Int -> Int
 bt x = x .&. 63
 {-# INLINE bt #-}
+
+class Decode64 t where
+  -- @'decode' offset length v@ -- reads a variable length up to 64-bits long
+  decode64 :: Int -> Int -> t -> Word64
+  default decode64 :: (Integral t, Bits t) => Int -> Int -> t -> Word64
+  decode64 oo lc os = fromIntegral $ (bit lc - 1) .&. shiftR os oo
+
+instance Decode64 Word
+instance Decode64 Word8
+instance Decode64 Word16
+instance Decode64 Word32
+instance Decode64 Word64
+instance Decode64 Int
+instance Decode64 Int8
+instance Decode64 Int16
+instance Decode64 Int32
+instance Decode64 Int64
+instance Decode64 Integer
+
+instance Decode64 (P.Vector Word64) where
+  decode64 oo lc os = (bit lc - 1) .&.
+    if b + lc < 64
+    then unsafeShiftR (P.unsafeIndex os w) b
+    else unsafeShiftR (P.unsafeIndex os w) b
+     .|. unsafeShiftL (P.unsafeIndex os $ w+1) (64 - b)
+    where w = wd oo
+          b = bt oo
+
+instance Decode64 (U.Vector Bit) where
+  decode64 lc os (V_Bit _ bs) = decode64 lc os bs
 
 newtype Bit = Bit Bool
  deriving (Show,Read,Eq,Ord,Enum,Bounded)
