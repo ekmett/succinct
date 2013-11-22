@@ -52,7 +52,7 @@ lbin :: V.Vector (P.Vector Word8)
       let bz = bx + by
       PM.unsafeWrite mbini j bz
       mlbini <- V.unsafeIndexM mlbin i
-      PM.unsafeWrite mlbini j (bits bz - 1)
+      PM.unsafeWrite mlbini j (bits bz)
   xs <- V.forM mbin P.unsafeFreeze
   ys <- V.forM mlbin P.unsafeFreeze
   return (xs,ys)
