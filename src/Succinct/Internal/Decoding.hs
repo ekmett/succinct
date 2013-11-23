@@ -2,6 +2,7 @@
 module Succinct.Internal.Decoding
   ( Decoding(..)
   , runDecoding
+  , skip
   , decodeBinary
   , decodeUnary
   , decodeGamma
@@ -15,7 +16,6 @@ import Data.Word
 import Data.Vector.Primitive as P
 import Succinct.Internal.Bit
 import Succinct.Internal.Broadword
-
 
 newtype Decoding a = Decoding
   { undecoding :: forall r. (a -> Int -> Word64 -> r) -> P.Vector Word64 -> Int -> Word64 -> r
@@ -39,6 +39,12 @@ instance Monad Decoding where
 
 runDecoding :: Decoding a -> P.Vector Word64 -> Int -> (a, Int)
 runDecoding (Decoding m) v i = m (\a i' _ -> (a,i')) v i (v P.! wd i)
+
+skip :: Int -> Decoding ()
+skip l = Decoding $ \ k v i xs -> k () (i + l) $!
+  if bt i + l < 64
+  then xs
+  else P.unsafeIndex v $ wd (i + l)
 
 -- read n bits
 decodeBinary :: Int -> Decoding Word64
