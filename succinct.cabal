@@ -79,6 +79,7 @@ library
     Succinct.Internal.Decoding
     Succinct.Internal.Delta
     Succinct.Internal.Level
+    Succinct.Internal.Spill
     Succinct.Internal.Word4
     Succinct.Tree.Binary
     Succinct.Tree.LOUDS
