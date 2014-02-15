@@ -22,7 +22,7 @@ import Data.Vector.Internal.Check as Ck
 #define BOUNDS_CHECK(f) Ck.f __FILE__ __LINE__ Ck.Bounds
 
 -- |
--- >>> _SUPERBLOCK_SIZE = _BLOCKS_PER_SUPERBLOCK * _BLOCK_SIZE
+-- >>> _SUPERBLOCK_SIZE == _BLOCKS_PER_SUPERBLOCK * _BLOCK_SIZE
 -- True
 _SUPERBLOCK_SIZE :: Int
 _SUPERBLOCK_SIZE = 960 -- = lcm 64 15
@@ -75,7 +75,7 @@ instance Ranked RRR where
            q1 -> go (P.unsafeIndex rs q1) (q1 * _BLOCKS_PER_SUPERBLOCK) (P.unsafeIndex oos q1) where
              go !acc !co !oo
                | co < q    = go (acc + c) (co + 1) (oo + lc)
-               | otherwise = acc + fromIntegral (popCount ((bitmap c $ fromIntegral $ decode64 oo lc os) .&. (bit r - 1)))
+               | otherwise = acc + fromIntegral (popCount (bitmap c $ fromIntegral $ decode64 oo lc os) .&. (bit r - 1))
                where c = fromIntegral (U.unsafeIndex cs co)
                      lc = logBinomial _BLOCK_SIZE c
   rank0 rrr i = i - rank1 rrr i

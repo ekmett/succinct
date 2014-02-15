@@ -4,6 +4,7 @@
 {-# LANGUAGE Trustworthy #-}
 {-# LANGUAGE DefaultSignatures #-}
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE CPP #-}
 module Succinct.Internal.Bit
   ( Bit(..)
   , Decode64(..)
@@ -40,8 +41,10 @@ bt x = x .&. 63
 class Decode64 t where
   -- @'decode' offset length v@ -- reads a variable length up to 64-bits long
   decode64 :: Int -> Int -> t -> Word64
+#ifndef HLINT
   default decode64 :: (Integral t, Bits t) => Int -> Int -> t -> Word64
   decode64 oo lc os = fromIntegral $ (bit lc - 1) .&. shiftR os oo
+#endif
 
 instance Decode64 Word
 instance Decode64 Word8
