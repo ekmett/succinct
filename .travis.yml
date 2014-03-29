@@ -41,7 +41,6 @@ install:
 script:
   - $CABAL build
   - $CABAL test --show-details=always
-  - scripts/stats
 
 notifications:
   irc:

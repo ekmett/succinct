@@ -61,7 +61,7 @@ integral n r = Spill
   , spill = fromIntegral $ unsafeShiftR (n + bit m - 1) m
   , universe = fromIntegral n
   , encode = \a ms -> do
-    Foldable.forM_ [0..m-1] $ \i -> do
+    Foldable.forM_ [0..m-1] $ \i ->
       UM.unsafeWrite ms i $ Bit (testBit a i)
     return $ fromIntegral $ shiftR a m
   , decode = \ms k -> let

@@ -31,10 +31,16 @@ class Access a t | t -> a where
   -- @'size' t@ returns the total number of elements in @t@.
   size   :: t -> Int
 
+  -- |
+  -- @t '!' n@ returns the n+1-th element in t.
+  --
+  -- @
+  -- t '!' ('select' a t i - 1) == a
+  -- @
   (!) :: t -> Int -> a
 #ifndef HLINT
   default (!) :: (Dictionary a t, a ~ Bool) => t -> Int -> a
-  (!) t i = rank True t i - rank True t (i - 1) == 1
+  (!) t i = rank True t (i + 1) - rank True t i == 1
 #endif
 
 instance Access a [a] where
