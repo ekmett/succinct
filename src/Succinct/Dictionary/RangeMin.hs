@@ -41,15 +41,25 @@ instance Access Bool RangeMin where
 instance Bitwise RangeMin where
   bitwise (RangeMin n bs _) = V_Bit n bs
 
-instance Dictionary Bool RangeMin
-instance Select1 RangeMin
-instance Select0 RangeMin
+instance Dictionary Bool RangeMin where
+  rank True xs i = rank1_RangeMin xs i
+  rank False xs i = i - rank1_RangeMin xs i
+
+instance Select1 RangeMin where
+  select1 = select True
+
+instance Select0 RangeMin where
+  select0 = select False
 
 instance Ranked RangeMin where
-  rank1 (RangeMin n ws ls) i0
-    = BOUNDS_CHECK(checkIndex) "rank" i0 (n+1)
-    $ go w (V.length ls - 3) $ popCount $ (ws P.! w) .&. (bit (bt i0) - 1)
-   where
+  rank1 = rank1_RangeMin
+  rank0 xs i = i - rank1_RangeMin xs i
+
+rank1_RangeMin :: RangeMin -> Int -> Int
+rank1_RangeMin (RangeMin n ws ls) i0
+  = BOUNDS_CHECK(checkIndex) "rank" i0 (n+1)
+  $ go w (V.length ls - 3) $ popCount $ (ws P.! w) .&. (bit (bt i0) - 1)
+  where
     w = wd i0
     go !_ 0  !acc = acc
     go i  li acc  = go (unsafeShiftR i 1) (li-1) $!
