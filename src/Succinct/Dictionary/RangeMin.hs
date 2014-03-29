@@ -31,19 +31,15 @@ data RangeMin = RangeMin
 rangeMin :: Bitwise t => t -> RangeMin
 rangeMin t = case bitwise t of
   V_Bit n bs -> RangeMin n bs $ V.fromList $ levels bs
-{-# RULES "rangeMin" rangeMin = id #-}
-{-# INLINE [0] rangeMin #-}
 
 instance Access Bool RangeMin where
   size (RangeMin n _ _) = n
   (!)  (RangeMin n bs _) i
      = BOUNDS_CHECK(checkIndex) "RangeMin.!" i n
      $ testBit (P.unsafeIndex bs $ wd i) (bt i)
-  {-# INLINE (!) #-}
 
 instance Bitwise RangeMin where
   bitwise (RangeMin n bs _) = V_Bit n bs
-  {-# INLINE bitwise #-}
 
 instance Dictionary Bool RangeMin
 instance Select1 RangeMin

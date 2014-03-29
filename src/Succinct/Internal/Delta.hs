@@ -33,7 +33,6 @@ instance Semigroup Delta where
     LT -> Delta (e + e') d'       n'
     EQ -> Delta (e + e') (d + e) (n + n')
     GT -> Delta (e + e') (d + e) n
-  {-# INLINE (<>) #-}
 
 minima :: Delta -> Int
 minima (Delta e d _) = e - d
@@ -41,13 +40,9 @@ minima (Delta e d _) = e - d
 bool :: Bool -> Delta
 bool True  = Delta 1 1 1
 bool False = Delta (-1) 0 1
-{-# INLINE bool #-}
 
-bits :: Bits a => a -> Delta
-bits w = Prelude.foldr1 (<>) $ fmap (bool . testBit w) [0..bitSize w - 1]
-{-# SPECIALIZE bits :: Word64 -> Delta #-}
-{-# SPECIALIZE bits :: Word16 -> Delta #-}
-{-# SPECIALIZE bits :: Word8  -> Delta #-}
+bits :: FiniteBits a => a -> Delta
+bits w = Prelude.foldr1 (<>) $ fmap (bool . testBit w) [0..finiteBitSize w - 1]
 
 e8s, d8s, n8s :: P.Vector Int8
 (e8s, d8s, n8s) = case U.fromListN 256 $ fmap go [0..255 :: Word8] of
@@ -59,16 +54,12 @@ e8s, d8s, n8s :: P.Vector Int8
 -- | Look up the 'Delta' for a Word8 via LUTs
 byte :: Word8 -> Delta
 byte w = Delta (e8 w) (d8 w) (n8 w)
-{-# INLINE byte #-}
 
 e8 :: Word8 -> Int
 e8 w = fromIntegral $ P.unsafeIndex e8s (fromIntegral w)
-{-# INLINE e8 #-}
 
 d8 :: Word8 -> Int
 d8 w = fromIntegral $ P.unsafeIndex d8s (fromIntegral w)
-{-# INLINE d8 #-}
 
 n8 :: Word8 -> Int
 n8 w = fromIntegral $ P.unsafeIndex n8s (fromIntegral w)
-{-# INLINE n8 #-}

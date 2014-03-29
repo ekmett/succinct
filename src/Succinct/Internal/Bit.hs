@@ -75,17 +75,17 @@ instance UM.Unbox Bit
 data instance UM.MVector s Bit = MV_Bit {-# UNPACK #-} !Int !(PM.MVector s Word64)
 
 instance GM.MVector U.MVector Bit where
-  {-# INLINE basicLength #-}
-  {-# INLINE basicUnsafeSlice #-}
-  {-# INLINE basicOverlaps #-}
-  {-# INLINE basicUnsafeNew #-}
-  {-# INLINE basicUnsafeReplicate #-}
-  {-# INLINE basicUnsafeRead #-}
-  {-# INLINE basicUnsafeWrite #-}
-  {-# INLINE basicClear #-}
-  {-# INLINE basicSet #-}
-  {-# INLINE basicUnsafeCopy #-}
-  {-# INLINE basicUnsafeGrow #-}
+--   {-# INLINE basicLength #-}
+--   {-# INLINE basicUnsafeSlice #-}
+--   {-# INLINE basicOverlaps #-}
+--   {-# INLINE basicUnsafeNew #-}
+--   {-# INLINE basicUnsafeReplicate #-}
+--   {-# INLINE basicUnsafeRead #-}
+--   {-# INLINE basicUnsafeWrite #-}
+--   {-# INLINE basicClear #-}
+--   {-# INLINE basicSet #-}
+--   {-# INLINE basicUnsafeCopy #-}
+--   {-# INLINE basicUnsafeGrow #-}
   basicLength (MV_Bit n _) = n
   basicUnsafeSlice i n (MV_Bit _ u) = MV_Bit n $ GM.basicUnsafeSlice i (wds n) u
   basicOverlaps (MV_Bit _ v1) (MV_Bit _ v2) = GM.basicOverlaps v1 v2
@@ -110,12 +110,12 @@ instance GM.MVector U.MVector Bit where
 
 data instance U.Vector Bit = V_Bit {-# UNPACK #-} !Int !(P.Vector Word64)
 instance G.Vector U.Vector Bit where
-  {-# INLINE basicLength #-}
-  {-# INLINE basicUnsafeFreeze #-}
-  {-# INLINE basicUnsafeThaw #-}
-  {-# INLINE basicUnsafeSlice #-}
-  {-# INLINE basicUnsafeIndexM #-}
-  {-# INLINE elemseq #-}
+--   {-# INLINE basicLength #-}
+--   {-# INLINE basicUnsafeFreeze #-}
+--   {-# INLINE basicUnsafeThaw #-}
+--   {-# INLINE basicUnsafeSlice #-}
+--   {-# INLINE basicUnsafeIndexM #-}
+--   {-# INLINE elemseq #-}
   basicLength (V_Bit n _)          = n
   basicUnsafeFreeze (MV_Bit n u)   = liftM (V_Bit n) (G.basicUnsafeFreeze u)
   basicUnsafeThaw (V_Bit n u)      = liftM (MV_Bit n) (G.basicUnsafeThaw u)

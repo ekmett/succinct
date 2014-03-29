@@ -55,8 +55,12 @@ instance Bits Word4 where
   complementBit (Word4 n) i = Word4 (complementBit n i .&. 15)
   testBit (Word4 n) i = testBit n i
   bitSize _ = 4
+  bitSizeMaybe _ = Just 4
   isSigned _ = False
   popCount (Word4 n) = popCount n
+
+instance FiniteBits Word4 where
+  finiteBitSize _ = 4
 
 instance Real Word4 where
   toRational (Word4 n) = toRational n
