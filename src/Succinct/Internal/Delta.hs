@@ -18,7 +18,7 @@ import Data.Word
 -- | Δ-Range-Min
 --
 -- This provides a semigroup-based variant of the basic aggregation used
--- in <http://arxiv.org/pdf/1111.5220.pdf Grossi and Ottaviano's> Range-Min tree,
+-- in <http://arxiv.org/pdf/1111.5220.pdf Grossi and Ottaviano's Range-Min tree>,
 -- which is in turn a simplification of a
 -- <https://www.siam.org/proceedings/alenex/2010/alx10_009_arroyuelod.pdf Range Min-Max> tree
 data Delta = Delta
@@ -30,7 +30,7 @@ data Delta = Delta
 instance Semigroup Delta where
   -- Delta e d n <> Delta e' d' n' = case compare d (d' - e') of
   Delta e d n <> Delta e' d' n' = case compare d' (d + e) of
-    LT -> Delta (e + e') d'       n'
+    LT -> Delta (e + e') d'      n'
     EQ -> Delta (e + e') (d + e) (n + n')
     GT -> Delta (e + e') (d + e) n
 
