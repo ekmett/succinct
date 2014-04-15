@@ -4,6 +4,9 @@
 module Succinct.Dictionary.RangeMin
   ( RangeMin(..)
   , rangeMin
+  , forwardSearch, backwardSearch
+  , findClose, findOpen
+  , enclose, levelAncestor
   ) where
 
 import Succinct.Dictionary.Class
@@ -23,10 +26,10 @@ import Data.Word
 -- <http://www.captura.uchile.cl/bitstream/handle/2250/15669/Arroyuelo_Diego.pdf?sequence=1 Range Min-Max> tree
 
 data RangeMin = RangeMin
-  {-# UNPACK #-} !Int
-  {-# UNPACK #-} !(P.Vector Word64)
-                 (V.Vector Level) -- last 2 levels should be used only for findClose, otherwise use broadword techniques on the word64s
-  deriving Show
+  { _rangeMinSize   :: {-# UNPACK #-} !Int
+  , _rangeMinRaw    :: {-# UNPACK #-} !(P.Vector Word64)
+  , _rangeMinLevels :: (V.Vector Level) -- last 2 levels should be used only for findClose, otherwise use broadword techniques on the word64s
+  }  deriving Show
 
 rangeMin :: Bitwise t => t -> RangeMin
 rangeMin t = case bitwise t of
@@ -67,3 +70,25 @@ rank1_RangeMin (RangeMin n ws ls) i0
         L8  _ es _ _ -> fromIntegral $ P.unsafeIndex es (i-1)
         L16 _ es _ _ -> fromIntegral $ P.unsafeIndex es (i-1)
         L64 _ es _ _ -> fromIntegral $ P.unsafeIndex es (i-1)
+
+-- |
+-- @'forwardSearch' r i d@ finds the minimum @j > i@ such that @'excess' r i j = d@
+forwardSearch :: RangeMin -> Int -> Int -> Int
+forwardSearch = undefined
+
+-- |
+-- @'forwardSearch' r i d@ finds the maximum @j < i@ such that @'excess' r i j = d@
+backwardSearch :: RangeMin -> Int -> Int -> Int
+backwardSearch = undefined
+
+findClose :: RangeMin -> Int -> Int
+findClose r x = forwardSearch r x 0
+
+findOpen :: RangeMin -> Int -> Int
+findOpen r x = backwardSearch r x 0
+
+enclose :: RangeMin -> Int -> Int
+enclose r x = backwardSearch r x 2
+
+levelAncestor :: RangeMin -> Int -> Int -> Int
+levelAncestor r x d = backwardSearch r x (d + 1)
