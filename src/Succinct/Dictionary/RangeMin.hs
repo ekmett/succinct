@@ -20,7 +20,7 @@ import Data.Word
 -- | This provides a variant of the basic aggregation used
 -- in <http://arxiv.org/pdf/1111.5220.pdf Grossi and Ottaviano's> Range-Min tree,
 -- which is in turn a simplification of a
--- <https://www.siam.org/proceedings/alenex/2010/alx10_009_arroyuelod.pdf Range Min-Max> tree
+-- <http://www.captura.uchile.cl/bitstream/handle/2250/15669/Arroyuelo_Diego.pdf?sequence=1 Range Min-Max> tree
 
 data RangeMin = RangeMin
   {-# UNPACK #-} !Int
