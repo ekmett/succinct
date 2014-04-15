@@ -208,7 +208,7 @@ class (Select0 t, Select1 t, Dictionary Bool t) => Ranked t where
   rank_ t i = rank1 t (i - 1)
 
   excess :: Ranked t => t -> Int -> Int
-  excess t i = rank1 t i - rank0 t i
+  excess t i = 2 * rank1 t i - i
 
 -- | Offset binary search
 --
