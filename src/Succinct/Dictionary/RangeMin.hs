@@ -45,8 +45,8 @@ instance Bitwise RangeMin where
   bitwise (RangeMin n bs _) = V_Bit n bs
 
 instance Dictionary Bool RangeMin where
-  rank True xs i = rank1_RangeMin xs i
-  rank False xs i = i - rank1_RangeMin xs i
+  rank True xs i = rank1 xs i
+  rank False xs i = i - rank1 xs i
 
 instance Select1 RangeMin where
   select1 = select True
@@ -55,15 +55,19 @@ instance Select0 RangeMin where
   select0 = select False
 
 instance Ranked RangeMin where
-  rank1 = rank1_RangeMin
-  rank0 xs i = i - rank1_RangeMin xs i
+  rank1 xs i = unsafeShiftR (excess_RangeMin xs i + i) 1
+  rank0 xs i = i - rank1 xs i
 
-rank1_RangeMin :: RangeMin -> Int -> Int
-rank1_RangeMin (RangeMin n ws ls) i0
+  excess = excess_RangeMin
+
+excess_RangeMin :: RangeMin -> Int -> Int
+excess_RangeMin (RangeMin n ws ls) i0
   = BOUNDS_CHECK(checkIndex) "rank" i0 (n+1)
-  $ go w (V.length ls - 3) $ popCount $ (ws P.! w) .&. (bit (bt i0) - 1)
+  $ go w (V.length ls - 3) $ 2 * ones - b
   where
     w = wd i0
+    b = bt i0
+    ones = popCount $ (ws P.! w) .&. (bit b - 1)
     go !_ 0  !acc = acc
     go i  li acc  = go (unsafeShiftR i 1) (li-1) $!
       if i .&. 1 == 0 then acc else acc + case V.unsafeIndex ls li of

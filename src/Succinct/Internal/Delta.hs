@@ -28,7 +28,6 @@ data Delta = Delta
   } deriving Show
 
 instance Semigroup Delta where
-  -- Delta e d n <> Delta e' d' n' = case compare d (d' - e') of
   Delta e d n <> Delta e' d' n' = case compare d' (d + e) of
     LT -> Delta (e + e') d'      n'
     EQ -> Delta (e + e') (d + e) (n + n')
