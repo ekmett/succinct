@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
 module Succinct.Internal.Delta
   ( Delta(..)
   , minima
@@ -40,8 +41,13 @@ bool :: Bool -> Delta
 bool True  = Delta 1 1 1
 bool False = Delta (-1) 0 1
 
+#if defined(__GLASGOW_HASKELL__) && __GLASGOW_HASKELL__ >= 707
 bits :: FiniteBits a => a -> Delta
 bits w = Prelude.foldr1 (<>) $ fmap (bool . testBit w) [0..finiteBitSize w - 1]
+#else
+bits :: Bits a => a -> Delta
+bits w = Prelude.foldr1 (<>) $ fmap (bool . testBit w) [0..bitSize w - 1]
+#endif
 
 e8s, d8s, n8s :: P.Vector Int8
 (e8s, d8s, n8s) = case U.fromListN 256 $ fmap go [0..255 :: Word8] of
