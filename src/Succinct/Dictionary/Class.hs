@@ -187,7 +187,7 @@ class (Select0 t, Select1 t, Dictionary Bool t) => Ranked t where
   -- 'rank0' = 'rank' 'False'
   -- @
   rank0 :: Ranked t => t -> Int -> Int
-  rank0 t i = i - rank0 t i
+  rank0 t i = i - rank1 t i
   {-# INLINE rank0 #-}
 
   -- |
@@ -196,7 +196,7 @@ class (Select0 t, Select1 t, Dictionary Bool t) => Ranked t where
   -- 'rank1' = 'rank' 'True'
   -- @
   rank1 :: Ranked t => t -> Int -> Int
-  rank1 t i = i - rank1 t i
+  rank1 t i = i - rank0 t i
 
   -- | Same as 'rank0', but without bounds checks
   unsafeRank0 :: t -> Int -> Int

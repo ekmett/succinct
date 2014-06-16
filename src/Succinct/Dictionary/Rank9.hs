@@ -66,16 +66,11 @@ instance Ranked Rank9 where
       -- == 0.
       --
       -- TODO(klao): Is this needed? How to handle this better?
+      -- Abstract it out into Internal!
       wi' = wd (i - 1) - (i - 1) `unsafeShiftR` 63
-      rest = fromIntegral $ popCount $ (P.unsafeIndex ws wi') .&. (bit' (bt i) - 1)
+      rest = fromIntegral $ popCount $ (P.unsafeIndex ws wi') .&. (unsafeBit (bt i) - 1)
       result = base + count9 + rest
   {-# INLINE unsafeRank1 #-}
-
--- TODO(klao): 'bit' from Data.Bits doesn't inline properly, so we need to wrap an
--- Int# into an Int and unwrap the result! On GHC 7.6.3.
-bit' :: Int -> Word64
-bit' i = 1 `unsafeShiftL` i
-{-# INLINE bit' #-}
 
 rank9 :: Bitwise t => t -> Rank9
 rank9 t = case bitwise t of

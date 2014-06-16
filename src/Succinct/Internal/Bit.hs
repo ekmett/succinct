@@ -12,6 +12,7 @@ module Succinct.Internal.Bit
   , wds
   , wd
   , bt
+  , unsafeBit
   , U.Vector(V_Bit)
   , UM.MVector(MV_Bit)
   , foldlMPadded
@@ -39,6 +40,13 @@ wd x = unsafeShiftR x 6
 bt :: Int -> Int
 bt x = x .&. 63
 {-# INLINE bt #-}
+
+-- The 'bit' from Data.Bits uses 'shiftL' thus introducing unnecessary branch.
+--
+-- Also 'bit' from Data.Bits doesn't inline properly on GHC 7.6.3.
+unsafeBit :: Int -> Word64
+unsafeBit i = 1 `unsafeShiftL` i
+{-# INLINE unsafeBit #-}
 
 class Decode64 t where
   -- @'decode' offset length v@ -- reads a variable length up to 64-bits long
