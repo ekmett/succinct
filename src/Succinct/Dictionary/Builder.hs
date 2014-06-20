@@ -11,7 +11,10 @@ module Succinct.Dictionary.Builder
   , Buildable(..)
   , build
   , buildWith
+  , buildWithFoldlM
   , vector
+  , vectorSized
+  , wordToBitBuilding
   -- * Internals
   , Building(..)
   ) where
@@ -19,6 +22,8 @@ module Succinct.Dictionary.Builder
 import Control.Applicative
 import Control.Monad
 import Control.Monad.ST
+import Data.Bits
+import Data.Word
 import Data.Foldable as F
 import Data.Profunctor
 import qualified Data.Vector.Generic as G
@@ -30,6 +35,7 @@ import Data.Vector.Internal.Check as Ck
 import Succinct.Internal.Building
 
 #define INTERNAL_CHECK(f) Ck.f __FILE__ __LINE__ Ck.Internal
+#define BOUNDS_CHECK(f) Ck.f __FILE__ __LINE__ Ck.Bounds
 
 newtype Builder a b = Builder (forall s. Building (ST s) a b)
 
@@ -51,10 +57,14 @@ build :: (Foldable f, Buildable a b) => f a -> b
 build = buildWith builder
 
 buildWith :: Foldable f => Builder a b -> f a -> b
-buildWith (Builder m) as = runST $ case m of
+buildWith builder' as = buildWithFoldlM F.foldlM builder' as
+
+buildWithFoldlM :: (forall m c. Monad m => (c -> a -> m c) -> c -> t -> m c)
+                   -> Builder a b -> t -> b
+buildWithFoldlM foldlM' (Builder m) as = runST $ case m of
   Building k h z -> do
     b <- z
-    k =<< F.foldlM h b as
+    k =<< foldlM' h b as
 
 class Buildable a b | b -> a where
   builder :: Builder a b
@@ -99,3 +109,39 @@ unsafeAppend1 v i x
 -- | Grow a vector logarithmically
 enlarge :: GM.MVector v a => v s a -> ST s (v s a)
 enlarge v = GM.unsafeGrow v (max (GM.length v) 1)
+
+vectorSized :: G.Vector v a => Int -> Builder a (v a)
+vectorSized n = Builder building where
+  building :: G.Vector v a => Building (ST s) a (v a)
+  building = Building stop step start where
+    start = V 0 `liftM` GM.new n
+    step (V i v) x =
+      BOUNDS_CHECK(checkIndex) "Builder.vectorSized" i n $ do
+        GM.unsafeWrite v i x
+        return $! V (i + 1) v
+    stop (V i v) = BOUNDS_CHECK(check) "Builder.vectorSized"
+                   ("not fully filled " ++ show (i,n)) (i == n)
+                   $ G.unsafeFreeze v
+
+
+data WTBBuild a = WTBBuild
+  {-# UNPACK #-} !Int    -- bit position
+  {-# UNPACK #-} !Word64 -- current word
+  !a                     -- Word64 based builder
+
+
+wordToBitBuilding :: (Monad m, Functor m)
+                     => Building m Word64 b -> (Int -> b -> m b)
+                     -> Building m Bool b
+wordToBitBuilding wBuilding sizeFixer =
+  case wBuilding of
+    Building kw hw zw -> Building stop step start
+     where start = WTBBuild 0 0 <$> zw
+           step (WTBBuild n w ws) b
+             | n63 == 63 = WTBBuild (n + 1) 0 <$> hw ws w'
+             | otherwise = return $ WTBBuild (n + 1) w' ws
+             where w' = if b then setBit w n63 else w
+                   n63 = n .&. 63
+           stop (WTBBuild n w ws)
+             | n .&. 63 == 0 = kw ws
+             | otherwise = hw ws w >>= kw >>= sizeFixer n

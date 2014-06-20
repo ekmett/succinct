@@ -4,6 +4,7 @@
 {-# LANGUAGE Trustworthy #-}
 {-# LANGUAGE DefaultSignatures #-}
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE BangPatterns #-}
 {-# LANGUAGE CPP #-}
 module Succinct.Internal.Bit
   ( Bit(..)
@@ -11,8 +12,10 @@ module Succinct.Internal.Bit
   , wds
   , wd
   , bt
+  , unsafeBit
   , U.Vector(V_Bit)
   , UM.MVector(MV_Bit)
+  , foldlMPadded
   ) where
 
 import Control.Monad
@@ -37,6 +40,13 @@ wd x = unsafeShiftR x 6
 bt :: Int -> Int
 bt x = x .&. 63
 {-# INLINE bt #-}
+
+-- The 'bit' from Data.Bits uses 'shiftL' thus introducing unnecessary branch.
+--
+-- Also 'bit' from Data.Bits doesn't inline properly on GHC 7.6.3.
+unsafeBit :: Int -> Word64
+unsafeBit i = 1 `unsafeShiftL` i
+{-# INLINE unsafeBit #-}
 
 class Decode64 t where
   -- @'decode' offset length v@ -- reads a variable length up to 64-bits long
@@ -128,3 +138,15 @@ instance G.Vector U.Vector Bit where
     return $ Bit $ testBit w (bt i)
   basicUnsafeCopy (MV_Bit _ mu) (V_Bit _ u) = G.basicUnsafeCopy mu u
   elemseq _ b z = b `seq` z
+
+-- | Fold a Bit vector as a sequence of Word64s, with the last word
+-- padded with 0 bits if incomplete.
+foldlMPadded :: Monad m => (b -> Word64 -> m b) -> b -> U.Vector Bit -> m b
+foldlMPadded f z (V_Bit n ws) = go 0 z
+  where
+    k = wd (n - 1)
+    t = bt n
+    mask = fromIntegral $ (bit t - 1) + (t - 1) `shiftR` 63
+    go !i !s | i < k     = f s (ws P.! i) >>= go (i+1)
+             | i == k    = f s $ (ws P.! k) .&. mask
+             | otherwise = return s

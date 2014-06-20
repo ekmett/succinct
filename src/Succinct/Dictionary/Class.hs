@@ -43,6 +43,9 @@ class Access a t | t -> a where
   (!) t i = rank True t (i + 1) - rank True t i == 1
 #endif
 
+  -- TODO: add an unsafeIndex?
+  -- unsafeIndex :: t -> Int -> a
+
 instance Access a [a] where
   size = Prelude.length
 
@@ -184,7 +187,8 @@ class (Select0 t, Select1 t, Dictionary Bool t) => Ranked t where
   -- 'rank0' = 'rank' 'False'
   -- @
   rank0 :: Ranked t => t -> Int -> Int
-  rank0 t i = i - rank0 t i
+  rank0 t i = i - rank1 t i
+  {-# INLINE rank0 #-}
 
   -- |
   -- @
@@ -192,7 +196,16 @@ class (Select0 t, Select1 t, Dictionary Bool t) => Ranked t where
   -- 'rank1' = 'rank' 'True'
   -- @
   rank1 :: Ranked t => t -> Int -> Int
-  rank1 t i = i - rank1 t i
+  rank1 t i = i - rank0 t i
+
+  -- | Same as 'rank0', but without bounds checks
+  unsafeRank0 :: t -> Int -> Int
+  unsafeRank0 t i = i - unsafeRank1 t i
+  {-# INLINE unsafeRank0 #-}
+
+  -- | Same as 'rank1', but without bounds checks
+  unsafeRank1 :: t -> Int -> Int
+  unsafeRank1 = rank1
 
   -- | @'rank_' t i@ return the number of bits to the left of position @i@
   --
