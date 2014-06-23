@@ -1,6 +1,7 @@
 language: haskell
 
 env:
+  - GHCVER=7.6.3
   - GHCVER=7.8.2
   - GHCVER=head
 
@@ -9,34 +10,28 @@ matrix:
     - env: GHCVER=head
 
 before_install:
-  # If $GHCVER is the one travis has, don't bother reinstalling it.
-  # We can also have faster builds by installing some libraries with
-  # `apt`. If it isn't, install the GHC we want from hvr's PPA along
-  # with cabal-1.18.
   - |
-    if [ $GHCVER = `ghc --numeric-version` ]; then
-      # Try installing some of the build-deps with apt-get for speed.
-      travis/cabal-apt-install --enable-tests $MODE
-      export CABAL=cabal
-    else
-      # Install the GHC we want from hvr's PPA
-      sudo add-apt-repository -y ppa:hvr/ghc
-      sudo apt-get update
-      sudo apt-get install cabal-install-1.18 ghc-$GHCVER
-      export CABAL=cabal-1.18
-      export PATH=/opt/ghc/$GHCVER/bin:$PATH
-    fi
-  # Uncomment whenever hackage is down.
-  # - mkdir -p ~/.cabal && cp travis/config ~/.cabal/config && $CABAL update
-  - $CABAL update
+    # Install the GHC we want from hvr's PPA
+    sudo add-apt-repository -y ppa:hvr/ghc
+    sudo apt-get update
+    sudo apt-get install ghc-$GHCVER cabal-install-1.18
+    export PATH=/opt/ghc/$GHCVER/bin:/opt/cabal/1.18/bin:$PATH
+    # Install recent alex and happy that work with GHC 7.8 and head
+    sudo apt-get install alex-3.1.3 happy-1.19.3
+    export PATH=/opt/alex/3.1.3/bin:/opt/happy/1.19.3/bin:$PATH
+  - ghc --version
+  - cabal --version
+  - alex --version
+  - happy --version
 
 install:
-  - $CABAL install --dependencies-only --enable-tests
-  - $CABAL configure --enable-tests $MODE
+  - cabal update
+  - cabal install --dependencies-only --enable-tests
 
 script:
-  - $CABAL build
-  - $CABAL test --show-details=always
+  - cabal configure --enable-tests
+  - cabal build
+  - cabal test --show-details=always
 
 notifications:
   irc:
