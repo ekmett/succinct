@@ -23,9 +23,9 @@ reverseBits a = reverseBytes d where
   c = shiftR b 2 .&. m2 .|. shiftL (b .&. m2) 2
   d = shiftR c 4 .&. m3 .|. shiftL (c .&. m3) 4
 
-foreign import ccall reverseBytes :: Word64 -> Word64
-foreign import ccall bsf64 :: Word64 -> CULong
-foreign import ccall bsr64 :: Word64 -> CULong
+foreign import ccall unsafe reverseBytes :: Word64 -> Word64
+foreign import ccall unsafe bsf64 :: Word64 -> CULong
+foreign import ccall unsafe bsr64 :: Word64 -> CULong
 
 -- | Calculate the total of the unsigned bytes of a 64-bit word;
 -- requires that the sum fits in a byte
