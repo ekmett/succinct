@@ -48,29 +48,37 @@ class Access a t | t -> a where
 
 instance Access a [a] where
   size = Prelude.length
+  {-# INLINE size #-}
 
   (!) = (!!)
+  {-# INLINE (!) #-}
 
 instance Access Bool Word64 where
   size _ = 64
+  {-# INLINE size #-}
 
   (!) = testBit
+  {-# INLINE (!) #-}
 
 instance Access Bool (U.Vector Bit) where
   size (V_Bit n _) = n
+  {-# INLINE size #-}
 
   (!)  (V_Bit n bs) i
      = BOUNDS_CHECK(checkIndex) "RangeMin.!" i n
      $ testBit (P.unsafeIndex bs $ wd i) (bt i)
+  {-# INLINE (!) #-}
 
 class Bitwise t where
   bitwise :: t -> U.Vector Bit
 
 instance a ~ Bit => Bitwise (U.Vector a) where
   bitwise = id
+  {-# INLINE bitwise #-}
 
 instance Bitwise Word64 where
   bitwise a = V_Bit 64 (P.singleton a)
+  {-# INLINE bitwise #-}
 
 instance a ~ Bool => Bitwise [a] where
   bitwise xs = U.fromList (fmap Bit xs)
@@ -101,6 +109,7 @@ class Access a t => Dictionary a t | t -> a where
   -- as long as @0 < i <= 'rank' a t ('size' t)@
   select :: a -> t -> Int -> Int
   select a t i = search (\j -> rank a t j >= i) i (size t)
+  {-# INLINE select #-}
 
 -- For testing
 instance Eq a => Dictionary a [a] where
@@ -110,6 +119,7 @@ instance Eq a => Dictionary a [a] where
       | a == b    = go (acc + 1) (n-1) bs
       | otherwise = go acc       (n-1) bs
     go _ _ []  = Prelude.error "rank []"
+  {-# INLINE rank #-}
 
   select a xs0 n0 = go 0 n0 xs0 where
     go !acc 0 _ = acc
@@ -117,6 +127,7 @@ instance Eq a => Dictionary a [a] where
       | a == b    = go (acc + 1) (n-1) bs
       | otherwise = go (acc + 1) n     bs
     go _ _ [] = Prelude.error "select []"
+  {-# INLINE select #-}
 
 -- | /O(1)/ 'rank' and 'select'
 instance Dictionary Bool Word64 where
@@ -126,9 +137,11 @@ instance Dictionary Bool Word64 where
   rank False xs i
     | i >= 64   = 64 - popCount xs
     | otherwise = i  - popCount (xs .&. (bit i - 1))
+  {-# INLINE rank #-}
 
   select True  xs i = selectWord64 xs i
   select False xs i = selectWord64 (complement xs) i
+  {-# INLINE select #-}
 
 -- | Many structures that do not support arbitrary 'rank' can support a
 -- limited notion of 'select'.
@@ -153,9 +166,11 @@ instance a ~ Bool => Select1 [a]
 
 instance Select0 Word64 where
   select0 xs i = selectWord64 (complement xs) i
+  {-# INLINE select0 #-}
 
 instance Select1 Word64 where
   select1 xs i = selectWord64 xs i
+  {-# INLINE select1 #-}
 
 -- | a classic bit-vector-based succinct indexed dictionary
 --
@@ -197,6 +212,7 @@ class (Select0 t, Select1 t, Dictionary Bool t) => Ranked t where
   -- @
   rank1 :: Ranked t => t -> Int -> Int
   rank1 t i = i - rank0 t i
+  {-# INLINE rank1 #-}
 
   -- | Same as 'rank0', but without bounds checks
   unsafeRank0 :: t -> Int -> Int
@@ -206,6 +222,7 @@ class (Select0 t, Select1 t, Dictionary Bool t) => Ranked t where
   -- | Same as 'rank1', but without bounds checks
   unsafeRank1 :: t -> Int -> Int
   unsafeRank1 = rank1
+  {-# INLINE unsafeRank1 #-}
 
   -- | @'rank_' t i@ return the number of bits to the left of position @i@
   --
@@ -222,6 +239,7 @@ class (Select0 t, Select1 t, Dictionary Bool t) => Ranked t where
 
   excess :: Ranked t => t -> Int -> Int
   excess t i = 2 * rank1 t i - i
+  {-# INLINE excess #-}
 
 -- | Offset binary search
 --
@@ -234,5 +252,5 @@ search p = go where
     | otherwise = go (m+1) h
     where hml = h - l
           m = l + unsafeShiftR hml 1 + unsafeShiftR hml 6
--- {-# INLINE search #-}
+{-# INLINE search #-}
 
