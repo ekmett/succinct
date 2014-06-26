@@ -43,7 +43,7 @@ library
   build-depends:
     base              >= 4     && < 5,
     comonad           >= 4     && < 5,
-    ghc-prim,
+    primitive         >= 0.5   && < 0.6,
     profunctors       >= 4     && < 5,
     semigroups        >= 0.11  && < 1,
     vector            >= 0.10  && < 0.11
@@ -52,10 +52,12 @@ library
   default-language: Haskell2010
 
   hs-source-dirs: src
-  c-sources: cbits/sse.c
+  c-sources:
+    cbits/sse.c
+    cbits/popcnt.c
 
   ghc-options: -Wall -O2
-  cc-options: -msse4
+  cc-options: -O3 -msse4 -mpopcnt
 
   if os(windows)
     cpp-options: -DOS_WINDOWS=1
@@ -80,6 +82,7 @@ library
     Succinct.Internal.Decoding
     Succinct.Internal.Delta
     Succinct.Internal.Level
+    Succinct.Internal.PopCount
     Succinct.Internal.Spill
     Succinct.Internal.Word4
     Succinct.Tree.Binary
@@ -141,10 +144,38 @@ test-suite rank9Test
     test-framework-hunit  >= 0.2,
     test-framework-th     >= 0.2
 
+test-suite popCountTest
+  type: exitcode-stdio-1.0
+  main-is: popCountTest.hs
+  hs-source-dirs: tests
+  default-language: Haskell2010
+  ghc-options: -Wall -O2 -threaded -rtsopts
+  build-depends:
+    succinct,
+    base,
+    HUnit                 >= 1.2,
+    QuickCheck            >= 2.4,
+    test-framework        >= 0.4,
+    test-framework-hunit  >= 0.2,
+    test-framework-quickcheck2 >= 0.2,
+    test-framework-th     >= 0.2,
+    vector
 
 benchmark rank9Bench
   Type: exitcode-stdio-1.0
   main-is: rank9Bench.hs
+  hs-source-dirs: benchmarks
+  default-language: Haskell2010
+  ghc-options: -Wall -O2 -threaded -rtsopts
+  build-depends:
+    succinct,
+    base,
+    criterion    >= 0.8,
+    vector
+
+benchmark popCountBench
+  Type: exitcode-stdio-1.0
+  main-is: popCountBench.hs
   hs-source-dirs: benchmarks
   default-language: Haskell2010
   ghc-options: -Wall -O2 -threaded -rtsopts

@@ -1,7 +1,5 @@
 {-# LANGUAGE TemplateHaskell #-}
-{-# LANGUAGE OverloadedStrings #-}
 {-# OPTIONS_GHC -fno-warn-missing-signatures #-}
-
 
 module Main (main) where
 
