@@ -1,7 +1,5 @@
 {-# LANGUAGE CPP #-}
 {-# LANGUAGE Trustworthy #-}
-{-# LANGUAGE TypeFamilies #-}
-{-# LANGUAGE DefaultSignatures #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 
 module Succinct.Dictionary.Rank9
@@ -17,6 +15,7 @@ import Data.Word
 import Succinct.Dictionary.Builder
 import Succinct.Dictionary.Class
 import Succinct.Internal.Bit
+import Succinct.Internal.PopCount
 
 #define BOUNDS_CHECK(f) Ck.f __FILE__ __LINE__ Ck.Bounds
 
@@ -47,7 +46,7 @@ instance Ranked Rank9 where
     unsafeRank1 t i
   {-# INLINE rank1 #-}
 
-  unsafeRank1 (Rank9 _ ws ps) i = fromIntegral result
+  unsafeRank1 (Rank9 _ ws ps) i = result
     where
       wi = wd i
       block = wi `shiftR` 3 `shiftL` 1
@@ -68,8 +67,8 @@ instance Ranked Rank9 where
       -- TODO(klao): Is this needed? How to handle this better?
       -- Abstract it out into Internal!
       wi' = wd (i - 1) - (i - 1) `unsafeShiftR` 63
-      rest = fromIntegral $ popCount $ (P.unsafeIndex ws wi') .&. (unsafeBit (bt i) - 1)
-      result = base + count9 + rest
+      rest = popCountWord64 $ (P.unsafeIndex ws wi') .&. (unsafeBit (bt i) - 1)
+      result = fromIntegral (base + count9) + rest
   {-# INLINE unsafeRank1 #-}
 
 rank9 :: Bitwise t => t -> Rank9
@@ -102,7 +101,7 @@ r9Builder vectorBuilder = Builder $ case vectorBuilder of
         | otherwise = return $ Build9 (n + 1) tr br' r9' rs
         where
           tr' = tr + br'
-          br' = br + fromIntegral (popCount w)
+          br' = br + fromIntegral (popCountWord64 w)
           r9' = r9 .|. br' `unsafeShiftL` (9 * n)
       stepRank rs tr r9 = hr rs tr >>= (`hr` r9)
       stop (Build9 _n tr _br r9 rs)
