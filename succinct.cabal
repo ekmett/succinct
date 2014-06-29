@@ -70,6 +70,7 @@ library
     Succinct.Dictionary
     Succinct.Dictionary.Builder
     Succinct.Dictionary.Class
+    Succinct.Dictionary.Poppy
     Succinct.Dictionary.Partitioned
     Succinct.Dictionary.RangeMin
     Succinct.Dictionary.Rank9
