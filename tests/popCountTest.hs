@@ -15,13 +15,14 @@ import Test.HUnit hiding (Test, assert)
 case_vector_slice :: IO ()
 case_vector_slice = do
   let v = P.fromList [1,3,7,15,31,63]
-  12 @=? popCountVecSlice v 2 3
+  12 @=? popCountSlice (vectorToInternal v) 2 3
 
 case_all_one_bits :: IO ()
 case_all_one_bits = do
   let v = P.replicate 16 (-1)
   forM_ [0..1024] $ \i -> do
-    assertEqual ("for index " ++ show i) i (popCountVecBitSlice v 0 i)
+    assertEqual ("for index " ++ show i) i
+      (popCountBitSlice (vectorToInternal v) 0 i)
 
 prop_pop_count_word64 w =
   popCount w == popCountWord64 w

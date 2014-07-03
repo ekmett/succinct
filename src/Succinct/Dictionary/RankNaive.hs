@@ -16,6 +16,7 @@ import Data.Word
 import Succinct.Dictionary.Builder
 import Succinct.Dictionary.Class
 import Succinct.Internal.Bit
+import Succinct.Internal.PopCount
 
 #define BOUNDS_CHECK(f) Ck.f __FILE__ __LINE__ Ck.Bounds
 
@@ -47,7 +48,7 @@ instance Ranked RankNaive where
   {-# INLINE rank1 #-}
 
   unsafeRank1 (RankNaive _ ws ps) i =
-    P.unsafeIndex ps w + popCount (P.unsafeIndex ws w' .&. (unsafeBit (bt i) - 1))
+    P.unsafeIndex ps w + popCountWord64 (P.unsafeIndex ws w' .&. (unsafeBit (bt i) - 1))
     where w = wd i
           -- If we just used w for indexing in ws, it could result in
           -- an out-of-bounds index (for i == n and n `mod` 64 == 0).
@@ -56,7 +57,7 @@ instance Ranked RankNaive where
 
 rankNaive :: Bitwise t => t -> RankNaive
 rankNaive t = case bitwise t of
-  V_Bit n v -> RankNaive n v $ P.scanl (\a b -> a + popCount b) 0 v
+  V_Bit n v -> RankNaive n v $ P.scanl (\a b -> a + popCountWord64 b) 0 v
 {-# INLINE [0] rankNaive #-}
 {-# RULES "rankNaive" rankNaive = id #-}
 

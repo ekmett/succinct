@@ -20,7 +20,11 @@ import Succinct.Internal.PopCount
 
 #define BOUNDS_CHECK(f) Ck.f __FILE__ __LINE__ Ck.Bounds
 
-data Poppy = Poppy {-# UNPACK #-} !Int !(P.Vector Word64) !(P.Vector Word64) ! (P.Vector Word64)
+data Poppy = Poppy
+             {-# UNPACK #-} !Int             -- length in bit
+             {-# UNPACK #-} !VectorInternal  -- the bitvector
+             !(P.Vector Word64)              -- upper layer of the inventory
+             !(P.Vector Word64)              -- main layer of the inventory
   deriving (Eq,Ord,Show)
 
 instance Access Bool Poppy where
@@ -29,11 +33,11 @@ instance Access Bool Poppy where
 
   (!) (Poppy n bs _ _) i
      = BOUNDS_CHECK(checkIndex) "Poppy.!" i n
-     $ testBit (P.unsafeIndex bs $ wd i) (bt i)
+     $ testBit (unsafeIndexInternal bs $ wd i) (bt i)
   {-# INLINE (!) #-}
 
 instance Bitwise Poppy where
-  bitwise (Poppy n v _ _) = V_Bit n v
+  bitwise (Poppy n v _ _) = V_Bit n $ vectorFromInternal v
   {-# INLINE bitwise #-}
 
 instance Dictionary Bool Poppy
@@ -50,8 +54,7 @@ instance Ranked Poppy where
   unsafeRank1 (Poppy _ ws ups ps) i = fromIntegral result
     where
       upperBlock = i `shiftR` 32
-      -- TODO(klao): is this optimization any good?
-      upperCnt = if i > 0 then fromIntegral $ P.unsafeIndex ups upperBlock else 0
+      upperCnt = fromIntegral $ P.unsafeIndex ups upperBlock
 
       block = i `shiftR` 9
 
@@ -65,22 +68,23 @@ instance Ranked Poppy where
 
       blockStart = block `shiftL` 3
       bitInBlock = i .&. 511
-      cnt = popCountVecBitSlice ws blockStart bitInBlock
+      cnt = popCountBitSlice ws blockStart bitInBlock
 
       result = upto4BlockCnt + blockCnts + cnt + upperCnt
   {-# INLINE unsafeRank1 #-}
 
 poppy :: Bitwise t => t -> Poppy
 poppy t = case bitwise t of
-  V_Bit n ws -> Poppy n ws ups ps
+  V_Bit n ws0 -> Poppy n ws ups ps
     where
+      ws = vectorToInternal ws0
       psSize = 1 + (n + 512) `shiftR` 11
       (ups, ps) = runST $ case poppyBlockBuilder $ vectorSized psSize of
         Builder (Building kp hp zp) -> zp >>= go 0 >>= kp
           where
             nWords = wd n
             go k s | k' <= nWords  = hp s (popCount512Bits ws k) >>= go k'
-                   | otherwise     = hp s (popCountVecBitSlice ws k remBits)
+                   | otherwise     = hp s (popCountBitSlice ws k remBits)
               where
                 remBits = n - k `shiftL` 6
                 k' = k + 8
@@ -145,7 +149,7 @@ poppyWordBuilder = Builder $ case vector of
           bs' <- hb bs pc
           vec <- kw ws
           (ups, ps) <- kb bs'
-          return $ Poppy (n * 64) vec ups ps
+          return $ Poppy (n * 64) (vectorToInternal vec) ups ps
 {-# INLINE poppyWordBuilder #-}
 
 instance Buildable Bool Poppy where

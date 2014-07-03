@@ -16,14 +16,18 @@ popCountNaive v = P.foldl' (\s x -> s + popCount x) 0 v
 popCountByWord :: P.Vector Word64 -> Int
 popCountByWord v = P.foldl' (\s x -> s + popCountWord64 x) 0 v
 
+popCountVec :: VectorInternal -> Int
+popCountVec vi@(VectorInternal _ len _) = popCountSlice vi 0 len
+
 benchSized :: String -> Int -> Benchmark
-benchSized tag bytes = v  `seq` bgroup tag [
+benchSized tag bytes = v `seq` vi `seq` bgroup tag [
   bench "naive" $ whnf popCountNaive v,
   bench "by-word" $ whnf popCountByWord v,
-  bench "full" $ whnf popCountVec v
+  bench "full" $ whnf popCountVec vi
   ]
   where
     v = sampleVec bytes
+    vi = vectorToInternal v
 
 benchmarks :: [Benchmark]
 benchmarks = [
