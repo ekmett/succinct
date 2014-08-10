@@ -85,7 +85,8 @@ instance (G.Vector v Word64, G.Vector v Bool) => Ranked (Rank9 v) where
       result = fromIntegral (base + count9) + rest
   {-# INLINE unsafeRank1 #-}
 
-rank9 :: (G.Vector v Word64, Bitwise t v, PackedBits v) => t -> Rank9 (Packed v)
+rank9 :: (G.Vector (Packed v) Word64, G.Vector v Word64, Bitwise t v, PackedBits v)
+      => t -> Rank9 (Packed v)
 rank9 t = case bitwise t of
   v -> Rank9 n (packedBits v) ps
     where
