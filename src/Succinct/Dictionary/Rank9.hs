@@ -41,11 +41,11 @@ instance G.Vector v Word64 => Access Bool (Rank9 v) where
      $ testBit (G.unsafeIndex bs $ wd i) (bt i)
   {-# INLINE (!) #-}
 
-instance Bitwise B.Vector (Rank9 P.Vector) where
+instance Bitwise (Rank9 P.Vector) B.Vector where
   bitwise (Rank9 n v _) = V_Bit n v
   {-# INLINE bitwise #-}
 
-instance Bitwise SBV.Vector (Rank9 S.Vector) where
+instance Bitwise (Rank9 S.Vector) SBV.Vector where
   bitwise (Rank9 n v _) = SBV.SV_Bit n v
   {-# INLINE bitwise #-}
 
