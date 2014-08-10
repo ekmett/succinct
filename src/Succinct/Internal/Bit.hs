@@ -16,6 +16,7 @@ module Succinct.Internal.Bit
   , U.Vector(V_Bit)
   , UM.MVector(MV_Bit)
   , foldlMPadded
+  , PackedBits(..)
   ) where
 
 import Control.Monad
@@ -150,3 +151,12 @@ foldlMPadded f z (V_Bit n ws) = go 0 z
     go !i !s | i < k     = f s (ws P.! i) >>= go (i+1)
              | i == k    = f s $ (ws P.! k) .&. mask
              | otherwise = return s
+
+-- | Expose the underlying packed representation of a bit vector
+class PackedBits v where
+  type Packed v :: * -> *
+  packedBits :: v Bit -> Packed v Word64
+
+instance PackedBits U.Vector where
+  type Packed U.Vector = P.Vector
+  packedBits (V_Bit _ ws) = ws

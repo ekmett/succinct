@@ -72,3 +72,7 @@ instance G.Vector Vector Bit where
     return $ Bit $ testBit w (bt i)
   basicUnsafeCopy (SMV_Bit _ mu) (SV_Bit _ u) = G.basicUnsafeCopy mu u
   elemseq _ b z = b `seq` z
+
+instance PackedBits Vector where
+  type Packed Vector = S.Vector
+  packedBits (SV_Bit _ ws) = ws
