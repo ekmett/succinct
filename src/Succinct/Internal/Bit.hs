@@ -4,8 +4,10 @@
 {-# LANGUAGE Trustworthy #-}
 {-# LANGUAGE DefaultSignatures #-}
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE BangPatterns #-}
 {-# LANGUAGE CPP #-}
+
 module Succinct.Internal.Bit
   ( Bit(..)
   , Decode64(..)
@@ -142,14 +144,17 @@ instance G.Vector U.Vector Bit where
 
 -- | Fold a Bit vector as a sequence of Word64s, with the last word
 -- padded with 0 bits if incomplete.
-foldlMPadded :: Monad m => (b -> Word64 -> m b) -> b -> U.Vector Bit -> m b
-foldlMPadded f z (V_Bit n ws) = go 0 z
+foldlMPadded :: (G.Vector v Bit, G.Vector (Packed v) Word64, PackedBits v, Monad m)
+             => (b -> Word64 -> m b) -> b -> v Bit -> m b
+foldlMPadded f z v = go 0 z
   where
+    n = G.length v
+    ws = packedBits v
     k = wd (n - 1)
     t = bt n
     mask = fromIntegral $ (bit t - 1) + (t - 1) `shiftR` 63
-    go !i !s | i < k     = f s (ws P.! i) >>= go (i+1)
-             | i == k    = f s $ (ws P.! k) .&. mask
+    go !i !s | i < k     = f s (ws G.! i) >>= go (i+1)
+             | i == k    = f s $ (ws G.! k) .&. mask
              | otherwise = return s
 
 -- | Expose the underlying packed representation of a bit vector
