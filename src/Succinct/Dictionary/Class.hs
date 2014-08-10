@@ -20,6 +20,7 @@ import Data.Bits
 import Data.Word
 import Data.Vector.Internal.Check as Ck
 import Data.Vector.Primitive as P
+import Data.Vector.Generic as G
 import Data.Vector.Unboxed as U
 import Succinct.Internal.Broadword
 import Succinct.Internal.Bit
@@ -69,19 +70,16 @@ instance Access Bool (U.Vector Bit) where
      $ testBit (P.unsafeIndex bs $ wd i) (bt i)
   {-# INLINE (!) #-}
 
-class Bitwise t where
-  bitwise :: t -> U.Vector Bit
+class (G.Vector v Bit) => Bitwise t v | t -> v where
+  bitwise :: t -> v Bit
 
-instance a ~ Bit => Bitwise (U.Vector a) where
+instance (G.Vector v a, a ~ Bit) => Bitwise (v a) v where
   bitwise = id
   {-# INLINE bitwise #-}
 
-instance Bitwise Word64 where
+instance Bitwise Word64 U.Vector where
   bitwise a = V_Bit 64 (P.singleton a)
   {-# INLINE bitwise #-}
-
-instance a ~ Bool => Bitwise [a] where
-  bitwise xs = U.fromList (fmap Bit xs)
 
 -- Succinct indexed dictionaries
 --

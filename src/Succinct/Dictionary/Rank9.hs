@@ -1,6 +1,7 @@
 {-# LANGUAGE CPP #-}
 {-# LANGUAGE Trustworthy #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE FlexibleContexts #-}
 
 module Succinct.Dictionary.Rank9
   ( Rank9(..)
@@ -14,7 +15,7 @@ import Data.Vector.Internal.Check as Ck
 import Data.Word
 import Succinct.Dictionary.Builder
 import Succinct.Dictionary.Class
-import Succinct.Internal.Bit
+import Succinct.Internal.Bit as B
 import Succinct.Internal.PopCount
 
 #define BOUNDS_CHECK(f) Ck.f __FILE__ __LINE__ Ck.Bounds
@@ -31,7 +32,7 @@ instance Access Bool Rank9 where
      $ testBit (P.unsafeIndex bs $ wd i) (bt i)
   {-# INLINE (!) #-}
 
-instance Bitwise Rank9 where
+instance Bitwise B.Vector Rank9 where
   bitwise (Rank9 n v _) = V_Bit n v
   {-# INLINE bitwise #-}
 
@@ -71,7 +72,7 @@ instance Ranked Rank9 where
       result = fromIntegral (base + count9) + rest
   {-# INLINE unsafeRank1 #-}
 
-rank9 :: Bitwise t => t -> Rank9
+rank9 :: Bitwise B.Vector t => t -> Rank9
 rank9 t = case bitwise t of
   v@(V_Bit n ws) -> Rank9 n ws ps
     where

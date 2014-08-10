@@ -1,6 +1,7 @@
 {-# LANGUAGE CPP #-}
 {-# LANGUAGE Trustworthy #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE FlexibleContexts #-}
 
 module Succinct.Dictionary.Poppy
   ( Poppy(..)
@@ -15,7 +16,7 @@ import Data.Vector.Internal.Check as Ck
 import Data.Word
 import Succinct.Dictionary.Builder
 import Succinct.Dictionary.Class
-import Succinct.Internal.Bit
+import Succinct.Internal.Bit as B
 import Succinct.Internal.PopCount
 
 #define BOUNDS_CHECK(f) Ck.f __FILE__ __LINE__ Ck.Bounds
@@ -36,7 +37,7 @@ instance Access Bool Poppy where
      $ testBit (unsafeIndexInternal bs $ wd i) (bt i)
   {-# INLINE (!) #-}
 
-instance Bitwise Poppy where
+instance Bitwise Poppy B.Vector where
   bitwise (Poppy n v _ _) = V_Bit n $ vectorFromInternal v
   {-# INLINE bitwise #-}
 
@@ -73,7 +74,7 @@ instance Ranked Poppy where
       result = upto4BlockCnt + blockCnts + cnt + upperCnt
   {-# INLINE unsafeRank1 #-}
 
-poppy :: Bitwise t => t -> Poppy
+poppy :: Bitwise t B.Vector => t -> Poppy
 poppy t = case bitwise t of
   V_Bit n ws0 -> Poppy n ws ups ps
     where

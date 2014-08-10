@@ -3,6 +3,8 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE DefaultSignatures #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE FlexibleContexts #-}
+
 module Succinct.Dictionary.RankNaive
   ( RankNaive(..)
   , rankNaive
@@ -15,7 +17,7 @@ import Data.Vector.Internal.Check as Ck
 import Data.Word
 import Succinct.Dictionary.Builder
 import Succinct.Dictionary.Class
-import Succinct.Internal.Bit
+import Succinct.Internal.Bit as B
 import Succinct.Internal.PopCount
 
 #define BOUNDS_CHECK(f) Ck.f __FILE__ __LINE__ Ck.Bounds
@@ -32,7 +34,7 @@ instance Access Bool RankNaive where
      $ testBit (P.unsafeIndex bs $ wd i) (bt i)
   {-# INLINE (!) #-}
 
-instance Bitwise RankNaive where
+instance Bitwise RankNaive B.Vector where
   bitwise (RankNaive n v _) = V_Bit n v
   {-# INLINE bitwise #-}
 
@@ -55,7 +57,7 @@ instance Ranked RankNaive where
           w' = wd (i - 1) - (i - 1) `unsafeShiftR` 63
   {-# INLINE unsafeRank1 #-}
 
-rankNaive :: Bitwise t => t -> RankNaive
+rankNaive :: Bitwise B.Vector t => t -> RankNaive
 rankNaive t = case bitwise t of
   V_Bit n v -> RankNaive n v $ P.scanl (\a b -> a + popCountWord64 b) 0 v
 {-# INLINE [0] rankNaive #-}
