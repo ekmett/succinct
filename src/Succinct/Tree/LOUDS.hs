@@ -46,7 +46,7 @@ louds xs = True: False: go 0 where
 {-# INLINE louds #-}
 
 -- | Convert a finite 'Rose' to 'Rank9'
-fromRose :: Rose -> Rank9
+fromRose :: Rose -> Rank9 v
 fromRose = rank9 . louds
 {-# INLINE fromRose #-}
 

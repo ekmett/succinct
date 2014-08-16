@@ -39,7 +39,7 @@ jacobson xs = True : go 0 where
     [] -> []
     ys -> ys ++ go (n+1)
 
-fromBinary :: Binary -> Rank9
+fromBinary :: Binary -> Rank9 v
 fromBinary = rank9 . jacobson
 {-# INLINE fromBinary #-}
 

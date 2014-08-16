@@ -23,7 +23,7 @@ import Data.Vector.Primitive as P
 import Data.Vector.Generic as G
 import Data.Vector.Unboxed as U
 import Succinct.Internal.Broadword
-import Succinct.Internal.Bit
+import Succinct.Internal.Bit as B
 
 #define BOUNDS_CHECK(f) Ck.f __FILE__ __LINE__ Ck.Bounds
 
@@ -73,12 +73,16 @@ instance Access Bool (U.Vector Bit) where
 class (G.Vector v Bit) => Bitwise t v | t -> v where
   bitwise :: t -> v Bit
 
-instance (G.Vector v a, a ~ Bit) => Bitwise (v a) v where
+instance (a ~ Bit) => Bitwise (B.Vector a) B.Vector where
   bitwise = id
   {-# INLINE bitwise #-}
 
 instance Bitwise Word64 U.Vector where
   bitwise a = V_Bit 64 (P.singleton a)
+  {-# INLINE bitwise #-}
+
+instance Bitwise [Bool] U.Vector where
+  bitwise = U.fromList . fmap Bit
   {-# INLINE bitwise #-}
 
 -- Succinct indexed dictionaries
