@@ -28,10 +28,15 @@ module Succinct.Tree.LOUDS
 import Control.Applicative
 import Control.Comonad
 import Data.Foldable
+import Data.Proxy
+import Data.Word
 import Data.Traversable
 import Succinct.Dictionary.Class
 import Succinct.Dictionary.Rank9
 import Succinct.Tree.Types (Rose(..))
+import Succinct.Internal.Bit (PackedBits(Packed))
+import qualified Data.Vector.Unboxed as U
+import qualified Data.Vector.Generic as G
 
 -- | Jacobson's 1-based LOUDS
 --
@@ -46,9 +51,17 @@ louds xs = True: False: go 0 where
 {-# INLINE louds #-}
 
 -- | Convert a finite 'Rose' to 'Rank9'
-fromRose :: Rose -> Rank9 v
-fromRose = rank9 . louds
+fromRose :: (Bitwise [Bool] U.Vector)
+         => Rose -> Rank9 (Packed U.Vector)
+fromRose = fromRose' (Proxy :: Proxy U.Vector)
 {-# INLINE fromRose #-}
+
+-- | Convert a finite 'Rose' to 'Rank9'
+fromRose' :: ( Bitwise [Bool] v, PackedBits v
+             , G.Vector (Packed v) Word64, G.Vector v Word64)
+          => Proxy v -> Rose -> Rank9 (Packed v)
+fromRose' p = rank9 p . louds
+{-# INLINE fromRose' #-}
 
 level :: Int -> Rose -> [Bool] -> [Bool]
 level 0 (Rose cs) xs = replicate (length cs) True ++ (False:xs)

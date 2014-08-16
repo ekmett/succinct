@@ -70,7 +70,7 @@ instance Access Bool (U.Vector Bit) where
      $ testBit (P.unsafeIndex bs $ wd i) (bt i)
   {-# INLINE (!) #-}
 
-class (G.Vector v Bit) => Bitwise t v | t -> v where
+class (G.Vector v Bit) => Bitwise t v where
   bitwise :: t -> v Bit
 
 instance (a ~ Bit) => Bitwise (B.Vector a) B.Vector where

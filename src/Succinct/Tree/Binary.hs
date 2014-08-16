@@ -27,10 +27,15 @@ module Succinct.Tree.Binary
 
 import Control.Comonad
 import Data.Foldable
+import Data.Proxy
 import Data.Traversable
+import Data.Word
 import Succinct.Dictionary.Class
 import Succinct.Dictionary.Rank9 as Rank9
 import Succinct.Tree.Types
+import Succinct.Internal.Bit (PackedBits(Packed))
+import qualified Data.Vector.Generic as G
+import qualified Data.Vector.Unboxed as U
 
 -- | Jacobson's encoding of a binary tree
 jacobson :: Binary -> [Bool]
@@ -39,9 +44,15 @@ jacobson xs = True : go 0 where
     [] -> []
     ys -> ys ++ go (n+1)
 
-fromBinary :: Binary -> Rank9 v
-fromBinary = rank9 . jacobson
+fromBinary :: (Bitwise [Bool] U.Vector)
+           => Binary -> Rank9 (Packed U.Vector)
+fromBinary = fromBinary' (Proxy :: Proxy U.Vector)
 {-# INLINE fromBinary #-}
+
+fromBinary' :: (G.Vector (Packed v) Word64, G.Vector v Word64, Bitwise [Bool] v, PackedBits v)
+            => Proxy v -> Binary -> Rank9 (Packed v)
+fromBinary' p = rank9 p . jacobson
+{-# INLINE fromBinary' #-}
 
 binary :: Ranked t => Zipper t -> Binary
 binary t = case children t of

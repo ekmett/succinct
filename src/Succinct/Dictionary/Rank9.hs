@@ -5,6 +5,7 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE UndecidableInstances #-}
 {-# LANGUAGE StandaloneDeriving #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 
 module Succinct.Dictionary.Rank9
   ( Rank9(..)
@@ -18,6 +19,7 @@ import qualified Data.Vector.Generic as G
 import qualified Data.Vector.Storable as S
 import Data.Vector.Internal.Check as Ck
 import Data.Word
+import Data.Proxy
 import Succinct.Dictionary.Builder
 import Succinct.Dictionary.Class
 import Succinct.Internal.Bit as B
@@ -85,9 +87,10 @@ instance (G.Vector v Word64, G.Vector v Bool) => Ranked (Rank9 v) where
       result = fromIntegral (base + count9) + rest
   {-# INLINE unsafeRank1 #-}
 
-rank9 :: (G.Vector (Packed v) Word64, G.Vector v Word64, Bitwise t v, PackedBits v)
-      => t -> Rank9 (Packed v)
-rank9 t = case bitwise t of
+rank9 :: forall v t.
+         (G.Vector (Packed v) Word64, G.Vector v Word64, Bitwise t v, PackedBits v)
+      => Proxy v -> t -> Rank9 (Packed v)
+rank9 _ t = case bitwise t :: v Bit of
   v -> Rank9 n (packedBits v) ps
     where
       -- Because we are building word-by-word and not bit-by-bit, we
@@ -98,7 +101,7 @@ rank9 t = case bitwise t of
       n = G.length v
       ps = buildWithFoldlM foldlMPadded (r9Builder $ vectorSized k) v
 {-# INLINE [0] rank9 #-}
-{-# RULES "rank9" rank9 = id #-}
+-- {-# RULES "rank9" rank9 = id #-}
 
 data Build9 a = Build9
   {-# UNPACK #-} !Int    -- word count `mod` 8
