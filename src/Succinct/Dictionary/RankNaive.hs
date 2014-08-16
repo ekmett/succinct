@@ -57,7 +57,7 @@ instance Ranked RankNaive where
           w' = wd (i - 1) - (i - 1) `unsafeShiftR` 63
   {-# INLINE unsafeRank1 #-}
 
-rankNaive :: Bitwise B.Vector t => t -> RankNaive
+rankNaive :: Bitwise t B.Vector => t -> RankNaive
 rankNaive t = case bitwise t of
   V_Bit n v -> RankNaive n v $ P.scanl (\a b -> a + popCountWord64 b) 0 v
 {-# INLINE [0] rankNaive #-}
