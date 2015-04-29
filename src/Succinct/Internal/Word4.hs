@@ -41,7 +41,7 @@ instance Bits Word4 where
   Word4 n .&. Word4 m = Word4 (n .&. m)
   Word4 n .|. Word4 m = Word4 (n .|. m)
   xor (Word4 n) (Word4 m) = Word4 (xor n m .&. 15)
-  complement (Word4 n) = Word4 (complement n .&. 0x15)
+  complement (Word4 n) = Word4 (complement n .&. 15)
   shift (Word4 n) i = Word4 (shift n i .&. 15)
   shiftL (Word4 n) i = Word4 (shiftL n i .&. 15)
   shiftR (Word4 n) i = Word4 (shiftR n i .&. 15)
