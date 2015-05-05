@@ -162,3 +162,9 @@ wordToBitBuilding wBuilding sizeFixer =
              | n .&. 63 == 0 = kw ws
              | otherwise = hw ws w >>= kw >>= sizeFixer n
 {-# INLINE wordToBitBuilding #-}
+
+-- When Nothing is fed in, do nothing.
+maybeBuild :: Applicative m => Building m a b -> Building m (Maybe a) b
+maybeBuild (Building k h z) = Building k h' z
+  where h' x (Just a) = h x a
+        h' x Nothing = pure x

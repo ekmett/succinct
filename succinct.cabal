@@ -42,6 +42,7 @@ flag test-hlint
 library
   build-depends:
     base              >= 4     && < 5,
+    bifunctors,
     comonad           >= 4     && < 5,
     primitive         >= 0.5   && < 0.6,
     profunctors       >= 4     && < 5,
@@ -86,6 +87,7 @@ library
     Succinct.Internal.PopCount
     Succinct.Internal.Spill
     Succinct.Internal.Word4
+    Succinct.Sequence
     Succinct.Tree.Binary
     Succinct.Tree.LOUDS
     Succinct.Tree.Types
