@@ -3,14 +3,17 @@
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE UndecidableInstances #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 module Succinct.Internal.Building
   ( Building(..)
+  , NonStreamingBuilding(..)
   ) where
 
 import Control.Applicative
 import Control.Monad
 import Data.Profunctor
 import qualified Data.Foldable as F
+import Data.Sequence as S
 
 -- | @foldlM@ as a data structure
 data Building m a b where
@@ -58,28 +61,22 @@ instance Applicative m => Applicative (Building m a) where
 
 data Pair a b = Pair !a !b
 
-reduce :: (Monad m, F.Foldable f) => f a -> Building m a b -> m b
-reduce as (Building k h z) = do
+newtype NonStreamingBuilding m a b = NonStreamingBuilding (Building m a b) deriving (Functor, Applicative)
+
+reduce :: (Monad m, F.Foldable f) => f a -> NonStreamingBuilding m a b -> m b
+reduce as (NonStreamingBuilding (Building k h z)) = do
   b <- z
   k =<< F.foldlM h b as
 
-join' :: Monad m => Building m a (Building m a b) -> Building m a b
+join' :: (Functor m, Monad m) => Building m a (NonStreamingBuilding m a b) -> Building m a b
 join' (Building k h z) = Building
                          (\(Pair z as) -> reduce as =<< k z)
-                         (\(Pair z as) a -> fmap (`Pair` (a : as)) $ h z a)
-                         (fmap (`Pair` []) z)
+                         (\(Pair z as) a -> fmap (`Pair` (as S.|> a)) $ h z a)
+                         (fmap (`Pair` S.empty) z)
 
 -- | Monad instance is not streaming; prefer the applicative.
-instance Monad m => Monad (Building m a) where
-  return = pure
+instance (Applicative m, Monad m) => Monad (NonStreamingBuilding m a) where
+  return = NonStreamingBuilding . pure
   {-# INLINE return #-}
-  Building ka ha za >>= f = join' $ Building (fmap f . ka) ha za
+  NonStreamingBuilding (Building ka ha za) >>= f = NonStreamingBuilding $ join' $ Building (fmap f . ka) ha za
   {-# INLINE (>>=) #-}
-
-split :: (F.Foldable f) =>
-         (a -> Bool) -> Building m Bool t -> Building m a b -> Building m a (t, Building m a b, Building m a b)
-split pred (Building kt ht zt) (Building kb hb zb) =
-  Building () (\(Trips x l r) a -> let b = f a
-                                   in if f a
-                                      then liftA3 Trips (ht x b) l 
-) ()

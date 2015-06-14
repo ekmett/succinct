@@ -1,4 +1,5 @@
 {-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE NoMonomorphismRestriction #-}
 module Succinct.Internal.Decoding
   ( Decoding(..)
   , runDecoding
@@ -49,11 +50,12 @@ skip l = Decoding $ \ k v i xs -> k () (i + l) $!
 -- read n bits
 decodeBinary :: Int -> Decoding Word64
 decodeBinary l = Decoding step where
+  step :: forall r. (Word64 -> Int -> Word64 -> r) -> P.Vector Word64 -> Int -> Word64 -> r
   step k v i xs
     | b + l < 64
       = k ((bit l - 1) .&. unsafeShiftR xs b) (i + l) xs
     | ys <- P.unsafeIndex v (wd i + 1)
-      = k ((bit l - 1) .&. (unsafeShiftR xs b .|. unsafeShiftL ys (64 - b))) (i + l) ys
+      = k ((bit l - 1) .&. (unsafeShiftR xs b .|. unsafeShiftL ys (64 -b))) (i + l) ys
     where b = bt i
 
 decodeUnary :: Decoding Int

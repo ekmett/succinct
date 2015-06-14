@@ -6,9 +6,11 @@
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE UndecidableInstances #-}
 {-# LANGUAGE FunctionalDependencies #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 module Succinct.Dictionary.Builder
   ( Builder(..)
   , Buildable(..)
+  , NonStreaming(..)
   , build
   , buildWith
   , buildWithFoldlM
@@ -58,6 +60,13 @@ instance Applicative (Builder a) where
   {-# INLINE pure #-}
   Builder mf <*> Builder ma = Builder (mf <*> ma)
   {-# INLINE (<*>) #-}
+
+newtype NonStreaming a b = NonStreaming { runNonStreaming :: Builder a b } deriving (Functor, Applicative)
+
+instance Monad (NonStreaming a) where
+  return = NonStreaming . pure
+  NonStreaming (Builder b) >>= f = NonStreaming $ Builder $ case NonStreamingBuilding b >>= (\a -> case f a of NonStreaming (Builder b2) -> NonStreamingBuilding b2) of
+    NonStreamingBuilding b -> b
 
 build :: (Foldable f, Buildable a b) => f a -> b
 build = buildWith builder
