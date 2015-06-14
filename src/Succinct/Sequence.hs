@@ -16,6 +16,7 @@ module Succinct.Sequence (
   WaveletTree(..),
   Encoding(..),
   buildOptimizedAlphabeticalSearchTree,
+  huTucker,
   ) where
 
 import Control.Applicative
@@ -27,6 +28,7 @@ import qualified Data.Foldable as F
 import qualified Data.Traversable as T
 import Data.Ord
 import Data.List
+import Data.Function
 
 import Succinct.Tree.Types
 import Succinct.Dictionary.Builder
@@ -172,11 +174,11 @@ foldableLength = length . F.toList
 
 --   depth 0 (1, n)
 
-data Attraction = Previous | Self | Next | PreviousPrevious | NextNext deriving (Show, Eq, Ord)
-data Elem heap b a = Elem (Either a (heap b)) Attraction
-                 | LeftBoundary
-                 | RightBoundary
-                 deriving (Eq)
+data Attraction = PreviousPrevious | Previous | Self | Next | NextNext deriving (Show, Eq, Ord)
+data Elem heap b a = Elem (Either a (heap b)) [Attraction]
+                   | LeftBoundary
+                   | RightBoundary
+                   deriving (Eq)
 instance (Show a, Show b, F.Foldable heap) => Show (Elem heap b a) where
   show (Elem (Left x) a) = "Elem " <> show x <> " " <> show a
   show (Elem (Right h) a) = "Elem " <> show (F.toList h) <> " " <> show a
@@ -184,8 +186,8 @@ instance (Show a, Show b, F.Foldable heap) => Show (Elem heap b a) where
   show RightBoundary = "RightBoundary"
 
 attraction (Elem _ a) = a
-attraction LeftBoundary = Previous
-attraction RightBoundary = Next
+attraction LeftBoundary = [Previous]
+attraction RightBoundary = [Next]
 
 isBoundary LeftBoundary = True
 isBoundary RightBoundary = True
@@ -200,21 +202,61 @@ decideAttraction xs = map f $ filter ok $ tails $ Nothing : fmap Just xs ++ [Not
         ok (_:_:_:_) = True
         ok _ = False
 
+--huTucker ::
+huTucker = constructTree . breadthFirstSearch . buildOptimizedAlphabeticalSearchTree
+
+-- return tree in increasing depth
+breadthFirstSearch :: Labelled () a -> [(a, Int)]
+breadthFirstSearch t = go $ S.singleton (t, 0)
+  where go to_visit = case S.viewl to_visit of
+          S.EmptyL -> []
+          (LabelledTip a, !l) S.:< rest -> (a, l) : go rest
+          (LabelledBin _ left right, !l) S.:< rest ->
+            go (rest S.|> (left, l+1) S.|> (right, l+1))
+
+pair [] = []
+pair [x] = error "pair: odd man out"
+pair (a:b:rest) = (a, b) : pair rest
+
+iterateN n f = foldl (.) id $ replicate n f
+
+--constructTree :: [((Int, a), Int)] -> Labelled () a
+constructTree = snd . pairUp . snd . foldl1 (\(old_level, acc) (new_level, new) -> (new_level, merge new $ iterateN (old_level - new_level) bin acc)) . map (\l -> (snd $ head l, map fst l)) . groupBy ((==) `on` snd) . reverse . map (\((index, value), height) -> ((index, LabelledTip value), height))
+  where
+    --pair xs | trace ("pair " <> show (length xs)) False = undefined
+    --bin x | trace ("bin " <> show x) False = undefined
+    bin x = map (\((i,a), (_,b)) -> (i, LabelledBin () a b)) . pair $ x
+
+    pairUp [] = error "nothing to pair"
+    pairUp [x] = x
+    pairUp xs = pairUp (bin xs)
+
+    --merge a b | trace ("merge " <> show a <> "; " <> show b) False = undefined
+    merge a b = sortBy (comparing fst) $ a <> b
+
+codewords :: Labelled () a -> [(a, [Bool])]
+codewords t = fmap (\(a, code) -> (a, reverse code)) $ go $ S.singleton (t, [])
+  where go to_visit = case S.viewl to_visit of
+          S.EmptyL -> []
+          (LabelledTip a, code) S.:< rest -> (a, code) : go rest
+          (LabelledBin _ left right, code) S.:< rest ->
+            go (rest S.|> (left, False:code) S.|> (right, True:code))
+
 buildOptimizedAlphabeticalSearchTree :: forall a n. (Show a, Eq a, Show n, Ord n, Num n, Bounded n) => [(a, n)] -> Labelled () a
 buildOptimizedAlphabeticalSearchTree [] = error "Cannot build with empty list of elements"
-buildOptimizedAlphabeticalSearchTree input = go (repeat LeftBoundary) $ (<> repeat RightBoundary) $ fmap (\((a, freq), attract) -> Elem (Left (freq, LabelledTip a)) attract) $ zip input $ decideAttraction $ fmap snd $ input
+buildOptimizedAlphabeticalSearchTree input = go (repeat LeftBoundary) $ (<> repeat RightBoundary) $ fmap (\((a, freq), attract) -> Elem (Left (freq, LabelledTip a)) [attract]) $ zip input $ decideAttraction $ fmap snd $ input
   where
-    go past future | trace ("past: " <> show (takeWhile (not . isBoundary) past) <> "; future: " <> show (takeWhile (not . isBoundary) future)) False = undefined
+    --go past future | trace ("past: " <> show (takeWhile (not . isBoundary) past) <> "; future: " <> show (takeWhile (not . isBoundary) future)) False = undefined
     go past [] = error $ "Should never happen. Past: " <> show (takeWhile (not . isBoundary) past)
     go past (RightBoundary:_) = error $ "Should never happen2. Past: " <> show (takeWhile (not . isBoundary) past)
     go (LeftBoundary:_) (Elem (Left (_, x)) _:RightBoundary:_) = x
     go (LeftBoundary:_) (Elem (Right h) _:RightBoundary:_) = fromJust $ huffmanHeapToTree h
     -- If the person I like likes me back, then we deal with it now.
     go past@(p:past1@(p2:ps)) (x:future@(next:future1@(next2:xs))) =
-      case attraction x of
-        PreviousPrevious | attraction p2 == NextNext ->
+      case head $ attraction x of
+        PreviousPrevious | NextNext `elem` attraction p2 ->
           combine ps (merge (contents p) (fix (contents p2) (contents x))) future
-        Previous | attraction p == Next ->
+        Previous | Next `elem` attraction p ->
           combine past1 (fix (contents p) (contents x)) future
         Self | Elem (Right heap) _ <- x ->
           let heap' = case PQ.minViewWithKey heap of
@@ -223,9 +265,9 @@ buildOptimizedAlphabeticalSearchTree input = go (repeat LeftBoundary) $ (<> repe
                   Nothing -> error "You shouldn't self attract if you only have one element in the heap"
                 Nothing -> error "heap cannot be empty"
           in adjust past (Right heap') future
-        Next | attraction next == Previous ->
+        Next | Previous `elem` attraction next ->
           combine past (fix (contents x) (contents next)) future1
-        NextNext | attraction next2 == PreviousPrevious ->
+        NextNext | PreviousPrevious `elem` attraction next2 ->
           let c = merge (fix (contents x) (contents next2)) (contents next)
           in combine past c xs
 
@@ -254,10 +296,9 @@ buildOptimizedAlphabeticalSearchTree input = go (repeat LeftBoundary) $ (<> repe
 
     adjust past x future =
       let e = calculate past x future
-          (a:b:past') = fixPast past (e:future)
+          (a:past') = fixPast past (e:future)
           future' = e : fixFuture (e:past) future
-      in go (b:past') (a:future')
-         --go past' (b:a:future')
+      in go past' (a:future')
 
     fixPast rest@(LeftBoundary:_) _ = rest
     fixPast (Elem heap _:rest@(LeftBoundary:_)) future =
@@ -288,7 +329,7 @@ buildOptimizedAlphabeticalSearchTree input = go (repeat LeftBoundary) $ (<> repe
             can_skip = case heap of
               Left _ -> True
               Right _ -> False
-            best = snd . minimum
+            best = map snd . head . groupBy ((==) `on` fst) . sortBy (comparing fst)
 
     fix a = Right . fix' a
     fix' (Left (k1, v1)) (Left (k2, v2)) = PQ.singleton (k1 + k2) $ LabelledBin () v1 v2
