@@ -17,6 +17,7 @@ module Succinct.Sequence (
   Encoding(..),
   buildOptimizedAlphabeticalSearchTree,
   huTucker,
+  validHuTuckerTree,
   ) where
 
 import Control.Applicative
@@ -214,24 +215,23 @@ breadthFirstSearch t = go $ S.singleton (t, 0)
           (LabelledBin _ left right, !l) S.:< rest ->
             go (rest S.|> (left, l+1) S.|> (right, l+1))
 
+pair :: [a] -> [(a, a)]
 pair [] = []
 pair [x] = error "pair: odd man out"
 pair (a:b:rest) = (a, b) : pair rest
 
+iterateN :: Int -> (a -> a) -> (a -> a)
 iterateN n f = foldl (.) id $ replicate n f
 
---constructTree :: [((Int, a), Int)] -> Labelled () a
-constructTree = snd . pairUp . snd . foldl1 (\(old_level, acc) (new_level, new) -> (new_level, merge new $ iterateN (old_level - new_level) bin acc)) . map (\l -> (snd $ head l, map fst l)) . groupBy ((==) `on` snd) . reverse . map (\((index, value), height) -> ((index, LabelledTip value), height))
+constructTree :: [((Int, a), Int)] -> Labelled () a
+constructTree = snd . pairUp . snd . foldl1 (\(old_level, acc) (new_level, new) -> (new_level, merge new $ iterateN (old_level - new_level) bin acc)) . map (\l -> (snd $ head l, map fst l)) . map (sortBy (comparing (fst.fst))) . reverse . groupBy ((==) `on` snd) . map (\((index, value), height) -> ((index, LabelledTip value), height))
   where
-    --pair xs | trace ("pair " <> show (length xs)) False = undefined
-    --bin x | trace ("bin " <> show x) False = undefined
     bin x = map (\((i,a), (_,b)) -> (i, LabelledBin () a b)) . pair $ x
 
     pairUp [] = error "nothing to pair"
     pairUp [x] = x
     pairUp xs = pairUp (bin xs)
 
-    --merge a b | trace ("merge " <> show a <> "; " <> show b) False = undefined
     merge a b = sortBy (comparing fst) $ a <> b
 
 codewords :: Labelled () a -> [(a, [Bool])]
@@ -246,9 +246,8 @@ buildOptimizedAlphabeticalSearchTree :: forall a n. (Show a, Eq a, Show n, Ord n
 buildOptimizedAlphabeticalSearchTree [] = error "Cannot build with empty list of elements"
 buildOptimizedAlphabeticalSearchTree input = go (repeat LeftBoundary) $ (<> repeat RightBoundary) $ fmap (\((a, freq), attract) -> Elem (Left (freq, LabelledTip a)) [attract]) $ zip input $ decideAttraction $ fmap snd $ input
   where
-    --go past future | trace ("past: " <> show (takeWhile (not . isBoundary) past) <> "; future: " <> show (takeWhile (not . isBoundary) future)) False = undefined
-    go past [] = error $ "Should never happen. Past: " <> show (takeWhile (not . isBoundary) past)
-    go past (RightBoundary:_) = error $ "Should never happen2. Past: " <> show (takeWhile (not . isBoundary) past)
+    go past [] = error $ "Internal error: empty future. Past: " <> show (takeWhile (not . isBoundary) past)
+    go past (RightBoundary:_) = error $ "Internal error: no current. Past: " <> show (takeWhile (not . isBoundary) past)
     go (LeftBoundary:_) (Elem (Left (_, x)) _:RightBoundary:_) = x
     go (LeftBoundary:_) (Elem (Right h) _:RightBoundary:_) = fromJust $ huffmanHeapToTree h
     -- If the person I like likes me back, then we deal with it now.
@@ -313,7 +312,6 @@ buildOptimizedAlphabeticalSearchTree input = go (repeat LeftBoundary) $ (<> repe
     ff (Left x) = "Left " <> show x
     ff (Right x) = "Right " <> show (F.toList x)
 
-    --calculate past heap future | trace ("calc: " <> show (takeWhile (not . isBoundary) past) <> "; heap = " <> ff heap <> "; future: " <> show (takeWhile (not . isBoundary) future)) False = undefined
     calculate (p:p2:_) heap (f:f2:_) =
       Elem heap $
       if can_skip
@@ -347,7 +345,13 @@ buildOptimizedAlphabeticalSearchTree input = go (repeat LeftBoundary) $ (<> repe
     isBlocked (Elem (Right _) _) = False
     isBlocked _ = True
 
+validHuTuckerTree :: (Eq a, Ord a) => Labelled () a -> Bool
+validHuTuckerTree t = let nodes = inOrderTraversal t
+                      in nodes == sort nodes
 
+inOrderTraversal :: Labelled () a -> [a]
+inOrderTraversal (LabelledTip a) = [a]
+inOrderTraversal (LabelledBin () l r) = inOrderTraversal l ++ inOrderTraversal r
 
 data WaveletTree f a = WaveletTree { bits :: Labelled f a
                                    , alphabet :: a -> Int -> Direction -- ^ For a given level, is the element to the right or to the left?
