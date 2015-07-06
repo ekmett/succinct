@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE RankNTypes #-}
 module Succinct.Internal.Decoding
   ( Decoding(..)
@@ -9,7 +10,9 @@ module Succinct.Internal.Decoding
   , decodeDelta
   ) where
 
+#if __GLASGOW_HASKELL__ < 710
 import Control.Applicative
+#endif
 import Control.Monad
 import Data.Bits
 import Data.Word

@@ -7,7 +7,9 @@ module Succinct.Dictionary.Poppy
   , poppy
   ) where
 
+#if __GLASGOW_HASKELL__ < 710
 import Control.Applicative
+#endif
 import Control.Monad.ST
 import Data.Bits
 import qualified Data.Vector.Primitive as P
