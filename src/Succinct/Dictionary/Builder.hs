@@ -16,7 +16,9 @@ module Succinct.Dictionary.Builder
   , Building(..)
   ) where
 
+#if __GLASGOW_HASKELL__ < 710
 import Control.Applicative
+#endif
 import Control.Monad
 import Control.Monad.ST
 import Data.Foldable as F

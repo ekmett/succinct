@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE PatternGuards #-}
 {-# LANGUAGE FlexibleContexts #-}
@@ -26,8 +27,10 @@ module Succinct.Tree.Binary
   ) where
 
 import Control.Comonad
+#if __GLASGOW_HASKELL__ < 710
 import Data.Foldable
 import Data.Traversable
+#endif
 import Succinct.Dictionary.Class
 import Succinct.Dictionary.Rank9 as Rank9
 import Succinct.Tree.Types

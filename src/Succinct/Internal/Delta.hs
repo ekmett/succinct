@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
 module Succinct.Internal.Delta
   ( Delta(..)
   , minima
@@ -7,6 +8,9 @@ module Succinct.Internal.Delta
   , e8, d8, n8
   ) where
 
+#if __GLASGOW_HASKELL__ < 710
+import Control.Applicative
+#endif
 import Data.Bits
 import Data.Int
 import Data.Semigroup
@@ -62,3 +66,17 @@ d8 w = fromIntegral $ P.unsafeIndex d8s (fromIntegral w)
 
 n8 :: Word8 -> Int
 n8 w = fromIntegral $ P.unsafeIndex n8s (fromIntegral w)
+
+{-
+fwd_e8s :: P.Vector Word8
+fwd_e8s = P.fromListN 2048 $ go <$> [0..7] <*> [0..255] where
+  go d p = either id id $ Prelude.foldl step (Right 8) [0..7] where
+    step (Left i) _ = Left i
+    step (Right r) i
+      | r' == d   = Left i
+      | otherwise = Right r'
+      where r' = fromIntegral $ r + fromEnum (testBit p (fromIntegral i))
+
+fwd_e8 :: Word8 -> Int -> Int
+fwd_e8 w8 i = fromIntegral $ P.unsafeIndex fwd_e8s (fromIntegral w8 + unsafeShiftL i 8)
+-}

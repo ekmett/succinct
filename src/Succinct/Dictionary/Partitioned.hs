@@ -1,13 +1,16 @@
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE FlexibleContexts #-}
 module Succinct.Dictionary.Partitioned
   ( Partitioned(..)
   ) where
 
+#if __GLASGOW_HASKELL__ < 710
 import Control.Applicative
 import Data.Foldable
 import Data.Monoid
 import Data.Traversable
+#endif
 import Succinct.Dictionary.Builder
 import Succinct.Dictionary.Class
 

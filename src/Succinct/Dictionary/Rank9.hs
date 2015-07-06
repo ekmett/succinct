@@ -8,7 +8,9 @@ module Succinct.Dictionary.Rank9
   , rank9
   ) where
 
+#if __GLASGOW_HASKELL__ < 710
 import Control.Applicative
+#endif
 import Data.Bits
 import qualified Data.Vector.Primitive as P
 import Data.Vector.Internal.Check as Ck

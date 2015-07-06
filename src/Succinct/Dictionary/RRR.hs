@@ -6,7 +6,9 @@ module Succinct.Dictionary.RRR
   ( RRR(..)
   ) where
 
+#if __GLASGOW_HASKELL__ < 710
 import Control.Applicative
+#endif
 import Data.Bits
 import Data.Foldable as F
 import Data.Vector.Primitive as P

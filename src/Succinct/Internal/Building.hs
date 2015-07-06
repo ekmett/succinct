@@ -7,7 +7,9 @@ module Succinct.Internal.Building
   ( Building(..)
   ) where
 
+#if __GLASGOW_HASKELL__ < 710
 import Control.Applicative
+#endif
 import Data.Profunctor
 
 -- | @foldlM@ as a data structure
