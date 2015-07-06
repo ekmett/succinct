@@ -1,4 +1,13 @@
--- | Utility functions for the RRR class and offset representation
+-----------------------------------------------------------------------------
+-- |
+-- Copyright   :  (C) 2013-15 Edward Kmett
+-- License     :  BSD-style (see the file LICENSE)
+-- Maintainer  :  Edward Kmett <ekmett@gmail.com>
+-- Stability   :  experimental
+-- Portability :  non-portable
+--
+-- Utility functions for the RRR class and offset representation
+-----------------------------------------------------------------------------
 module Succinct.Internal.Binomial
   ( binomial
   , logBinomial

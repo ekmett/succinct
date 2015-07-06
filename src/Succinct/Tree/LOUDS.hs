@@ -4,8 +4,16 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE UndecidableInstances #-}
-
--- | Delpratt, Rahman and Raman's double numbering scheme for LOUDS
+-----------------------------------------------------------------------------
+-- |
+-- Copyright   :  (C) 2013-15 Edward Kmett
+-- License     :  BSD-style (see the file LICENSE)
+-- Maintainer  :  Edward Kmett <ekmett@gmail.com>
+-- Stability   :  experimental
+-- Portability :  non-portable
+--
+-- Delpratt, Rahman and Raman's double numbering scheme for LOUDS
+-----------------------------------------------------------------------------
 module Succinct.Tree.LOUDS
   (
   -- * Basic rose tree

@@ -2,7 +2,16 @@
 {-# LANGUAGE DeriveFunctor #-}
 {-# LANGUAGE DeriveDataTypeable #-}
 {-# LANGUAGE RankNTypes #-}
--- | Mihai Pǎtraşcu's "Succincter" spill-over representations
+-----------------------------------------------------------------------------
+-- |
+-- Copyright   :  (C) 2013-15 Edward Kmett
+-- License     :  BSD-style (see the file LICENSE)
+-- Maintainer  :  Edward Kmett <ekmett@gmail.com>
+-- Stability   :  experimental
+-- Portability :  non-portable
+--
+-- Mihai Pǎtraşcu's "Succincter" spill-over representations
+-----------------------------------------------------------------------------
 module Succinct.Internal.Spill
   ( Spill(..)
   , size
