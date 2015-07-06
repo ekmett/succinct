@@ -1,10 +1,15 @@
 module Succinct.Dictionary
-  ( module Dict
+  ( module Succinct.Dictionary.Builder
+  , module Succinct.Dictionary.Class
+  , module Succinct.Dictionary.Partitioned
+  , module Succinct.Dictionary.RangeMin
+  , module Succinct.Dictionary.Rank9
+  , module Succinct.Dictionary.RRR
   ) where
 
-import Succinct.Dictionary.Builder as Dict
-import Succinct.Dictionary.Class as Dict
-import Succinct.Dictionary.Partitioned as Dict
-import Succinct.Dictionary.RangeMin as Dict
-import Succinct.Dictionary.Rank9 as Dict
-import Succinct.Dictionary.RRR as Dict
+import Succinct.Dictionary.Builder
+import Succinct.Dictionary.Class
+import Succinct.Dictionary.Partitioned
+import Succinct.Dictionary.RangeMin
+import Succinct.Dictionary.Rank9
+import Succinct.Dictionary.RRR
