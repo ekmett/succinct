@@ -23,11 +23,12 @@ reverseBits a = reverseBytes d where
   c = shiftR b 2 .&. m2 .|. shiftL (b .&. m2) 2
   d = shiftR c 4 .&. m3 .|. shiftL (c .&. m3) 4
 
-foreign import ccall reverseBytes :: Word64 -> Word64
-foreign import ccall bsf64 :: Word64 -> CULong
-foreign import ccall bsr64 :: Word64 -> CULong
+foreign import ccall unsafe reverseBytes :: Word64 -> Word64
+foreign import ccall unsafe bsf64 :: Word64 -> CULong
+foreign import ccall unsafe bsr64 :: Word64 -> CULong
 
--- | Calculate the total of the unsigned bytes of a 64-bit word
+-- | Calculate the total of the unsigned bytes of a 64-bit word;
+-- requires that the sum fits in a byte
 byteSum :: Word64 -> Word64
 byteSum a = shiftR (a * 0x0101010101010101) 56
 
@@ -39,11 +40,13 @@ byteCounts a = d .&. lsns where
   threes  = 0x3333333333333333
   as      = 0xAAAAAAAAAAAAAAAA
   lsbs    = 0x0101010101010101
-  lsns = 0x0f0f * lsbs
+  lsns = 0x0f * lsbs
   b = a - shiftR (a .&. as) 1
   c = (b .&. threes) + (shiftR b 2 .&. threes)
   d = c + shiftR c 4
 
+-- | signed compare byte by byte, returning whether or not the result is less than or equal to
+-- the corresponding byte in the other word as the least significant bit of each byte
 leq8 :: Word64 -> Word64 -> Word64
 leq8 x y = shiftR (w .&. msbs) 7 where
   msbs = 0x8080808080808080
@@ -58,6 +61,10 @@ uleq8 x y = shiftR (w .&. msbs) 7 where
   z = (y .|. msbs) - (x .&. complement msbs)
   w = x `xor` y `xor` z `xor` (x .&. complement y)
 
+-- | For every byte in the input test whether it's non-zero, setting
+-- the corresponding byte of the result to 0x01 or 0x00 accordingly
+--
+-- @'nonzero8' x = 'uleq8' 0x0101010101010101 x@
 nonzero8 :: Word64 -> Word64
 nonzero8 x = shiftR ((x .|. ((x .|. msbs) - lsbs)) .&. msbs) 7 where
   msbs = 0x8080808080808080

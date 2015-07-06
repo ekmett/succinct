@@ -1,4 +1,5 @@
 {-# LANGUAGE BangPatterns #-}
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 module Succinct.Internal.Word4
@@ -40,7 +41,7 @@ instance Bits Word4 where
   Word4 n .&. Word4 m = Word4 (n .&. m)
   Word4 n .|. Word4 m = Word4 (n .|. m)
   xor (Word4 n) (Word4 m) = Word4 (xor n m .&. 15)
-  complement (Word4 n) = Word4 (complement n .&. 0x15)
+  complement (Word4 n) = Word4 (complement n .&. 15)
   shift (Word4 n) i = Word4 (shift n i .&. 15)
   shiftL (Word4 n) i = Word4 (shiftL n i .&. 15)
   shiftR (Word4 n) i = Word4 (shiftR n i .&. 15)
@@ -55,12 +56,17 @@ instance Bits Word4 where
   complementBit (Word4 n) i = Word4 (complementBit n i .&. 15)
   testBit (Word4 n) i = testBit n i
   bitSize _ = 4
-  bitSizeMaybe _ = Just 4
   isSigned _ = False
   popCount (Word4 n) = popCount n
+#if defined(__GLASGOW_HASKELL__) && __GLASGOW_HASKELL__ >= 707
+  bitSizeMaybe _ = Just 4
+#endif
 
+
+#if defined(__GLASGOW_HASKELL__) && __GLASGOW_HASKELL__ >= 707
 instance FiniteBits Word4 where
   finiteBitSize _ = 4
+#endif
 
 instance Real Word4 where
   toRational (Word4 n) = toRational n

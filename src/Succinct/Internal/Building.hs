@@ -18,8 +18,11 @@ data Building m a b where
 
 instance Functor m => Profunctor (Building m) where
   dimap f g (Building k h z) = Building (fmap g . k) (\x a -> h x (f a)) z
+  {-# INLINE dimap #-}
   rmap g (Building k h z) = Building (fmap g . k) h z
+  {-# INLINE rmap #-}
   lmap f (Building k h z) = Building k (\x a -> h x (f a)) z
+  {-# INLINE lmap #-}
 
 instance Applicative m => Choice (Building m) where
   left' (Building k h z) = Building (_Left k) step (Left <$> z) where
@@ -29,6 +32,7 @@ instance Applicative m => Choice (Building m) where
 
     _Left f (Left a) = Left <$> f a
     _Left _ (Right b) = pure $ Right b
+  {-# INLINE left' #-}
 
   right' (Building k h z) = Building (_Right k) step (Right <$> z) where
     step (Right x) (Right y) = Right <$> h x y
@@ -37,15 +41,19 @@ instance Applicative m => Choice (Building m) where
 
     _Right _ (Left b)  = pure $ Left b
     _Right f (Right a) = Right <$> f a
+  {-# INLINE right' #-}
 
 instance Functor m => Functor (Building m a) where
   fmap f (Building k h z) = Building (fmap f . k) h z
+  {-# INLINE fmap #-}
 
 instance Applicative m => Applicative (Building m a) where
   pure b = Building (\() -> pure b) (\() _ -> pure ()) (pure ())
+  {-# INLINE pure #-}
   Building kf hf zf <*> Building ka ha za = Building
     (\(Pair xf xa) -> kf xf <*> ka xa)
     (\(Pair xf xa) a -> Pair <$> hf xf a <*> ha xa a)
     (Pair <$> zf <*> za)
+  {-# INLINE (<*>) #-}
 
 data Pair a b = Pair !a !b

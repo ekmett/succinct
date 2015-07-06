@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE DeriveFunctor #-}
 {-# LANGUAGE DeriveDataTypeable #-}
 {-# LANGUAGE RankNTypes #-}
@@ -55,7 +56,11 @@ redundancy s = logBase 2 $ fromIntegral (size s) / fromIntegral (universe s)
 -- The resulting scheme has bounded redundancy:
 --
 -- @redundancy n r <= 2/fromIntegral r@
+#if defined(__GLASGOW_HASKELL__) && __GLASGOW_HASKELL__ >= 707
 integral :: (FiniteBits a, Integral a) => a -> a -> Spill a a
+#else
+integral :: (Bits a, Integral a) => a -> a -> Spill a a
+#endif
 integral n r = Spill
   { bits = m
   , spill = fromIntegral $ unsafeShiftR (n + bit m - 1) m
