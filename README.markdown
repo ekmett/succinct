@@ -1,7 +1,7 @@
 succinct
 ========
 
-[![Build Status](https://secure.travis-ci.org/ekmett/succinct.png?branch=master)](http://travis-ci.org/ekmett/succinct)
+[![Hackage](https://img.shields.io/hackage/v/succinct.svg)](https://hackage.haskell.org/package/succinct) [![Build Status](https://secure.travis-ci.org/ekmett/succinct.png?branch=master)](http://travis-ci.org/ekmett/succinct
 
 This is a playground for exploring succinct data structures in Haskell
 
