@@ -29,9 +29,10 @@ import Data.Bits
 import Data.Word
 import Data.Vector.Internal.Check as Ck
 import Data.Vector.Primitive as P
+import Data.Vector.Generic as G
 import Data.Vector.Unboxed as U
 import Succinct.Internal.Broadword
-import Succinct.Internal.Bit
+import Succinct.Internal.Bit as B
 
 #define BOUNDS_CHECK(f) Ck.f __FILE__ __LINE__ Ck.Bounds
 
@@ -78,19 +79,20 @@ instance Access Bool (U.Vector Bit) where
      $ testBit (P.unsafeIndex bs $ wd i) (bt i)
   {-# INLINE (!) #-}
 
-class Bitwise t where
-  bitwise :: t -> U.Vector Bit
+class (G.Vector v Bit) => Bitwise t v where
+  bitwise :: t -> v Bit
 
-instance a ~ Bit => Bitwise (U.Vector a) where
+instance (a ~ Bit) => Bitwise (B.Vector a) B.Vector where
   bitwise = id
   {-# INLINE bitwise #-}
 
-instance Bitwise Word64 where
+instance Bitwise Word64 U.Vector where
   bitwise a = V_Bit 64 (P.singleton a)
   {-# INLINE bitwise #-}
 
-instance a ~ Bool => Bitwise [a] where
-  bitwise xs = U.fromList (fmap Bit xs)
+instance Bitwise [Bool] U.Vector where
+  bitwise = U.fromList . fmap Bit
+  {-# INLINE bitwise #-}
 
 -- Succinct indexed dictionaries
 --

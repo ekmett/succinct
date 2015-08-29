@@ -89,6 +89,7 @@ library
     Succinct.Internal.Level
     Succinct.Internal.PopCount
     Succinct.Internal.Spill
+    Succinct.Internal.StorableBitVector
     Succinct.Internal.Word4
     Succinct.Sequence
     Succinct.Tree.Binary

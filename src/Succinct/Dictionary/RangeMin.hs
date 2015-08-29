@@ -1,6 +1,7 @@
 {-# LANGUAGE CPP #-}
 {-# LANGUAGE BangPatterns #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE FlexibleContexts #-}
 -----------------------------------------------------------------------------
 -- |
 -- Copyright   :  (C) 2013-15 Edward Kmett
@@ -19,7 +20,7 @@ module Succinct.Dictionary.RangeMin
   ) where
 
 import Succinct.Dictionary.Class
-import Succinct.Internal.Bit
+import Succinct.Internal.Bit as B
 import Succinct.Internal.Level
 import Data.Bits
 import Data.Vector.Internal.Check as Ck
@@ -40,7 +41,7 @@ data RangeMin = RangeMin
   , _rangeMinLevels :: (V.Vector Level) -- last 2 levels should be used only for findClose, otherwise use broadword techniques on the word64s
   }  deriving Show
 
-rangeMin :: Bitwise t => t -> RangeMin
+rangeMin :: Bitwise t B.Vector => t -> RangeMin
 rangeMin t = case bitwise t of
   V_Bit n bs -> RangeMin n bs $ V.fromList $ levels bs
 {-# RULES "rangeMin" rangeMin = id #-}
@@ -53,7 +54,7 @@ instance Access Bool RangeMin where
      $ testBit (P.unsafeIndex bs $ wd i) (bt i)
   {-# INLINE (!) #-}
 
-instance Bitwise RangeMin where
+instance Bitwise RangeMin B.Vector where
   bitwise (RangeMin n bs _) = V_Bit n bs
   {-# INLINE bitwise #-}
 
