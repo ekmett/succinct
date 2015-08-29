@@ -3,6 +3,7 @@
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE UndecidableInstances #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 -----------------------------------------------------------------------------
 -- |
 -- Copyright   :  (C) 2013-15 Edward Kmett
@@ -14,12 +15,16 @@
 -----------------------------------------------------------------------------
 module Succinct.Internal.Building
   ( Building(..)
+  , NonStreamingBuilding(..)
   ) where
 
 #if __GLASGOW_HASKELL__ < 710
 import Control.Applicative
 #endif
+import Control.Monad
 import Data.Profunctor
+import qualified Data.Foldable as F
+import Data.Sequence as S
 
 -- | @foldlM@ as a data structure
 data Building m a b where
@@ -66,3 +71,23 @@ instance Applicative m => Applicative (Building m a) where
   {-# INLINE (<*>) #-}
 
 data Pair a b = Pair !a !b
+
+newtype NonStreamingBuilding m a b = NonStreamingBuilding (Building m a b) deriving (Functor, Applicative)
+
+reduce :: (Monad m, F.Foldable f) => f a -> NonStreamingBuilding m a b -> m b
+reduce as (NonStreamingBuilding (Building k h z)) = do
+  b <- z
+  k =<< F.foldlM h b as
+
+join' :: (Functor m, Monad m) => Building m a (NonStreamingBuilding m a b) -> Building m a b
+join' (Building k h z) = Building
+                         (\(Pair z as) -> reduce as =<< k z)
+                         (\(Pair z as) a -> fmap (`Pair` (as S.|> a)) $ h z a)
+                         (fmap (`Pair` S.empty) z)
+
+-- | Monad instance is not streaming; prefer the applicative.
+instance (Applicative m, Monad m) => Monad (NonStreamingBuilding m a) where
+  return = NonStreamingBuilding . pure
+  {-# INLINE return #-}
+  NonStreamingBuilding (Building ka ha za) >>= f = NonStreamingBuilding $ join' $ Building (fmap f . ka) ha za
+  {-# INLINE (>>=) #-}
