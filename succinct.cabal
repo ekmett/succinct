@@ -67,7 +67,7 @@ library
     cpp-options: -DOS_WINDOWS=1
 
   if os(darwin)
-    ghc-options: -optl -fexceptons
+    ghc-options: -optl -fexceptions
     cpp-options: -DOS_X
 
   exposed-modules:
